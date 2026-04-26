@@ -1,0 +1,6 @@
+@MovilidadInteligente.Web_HostAddress = http://localhost:5187
+
+GET {{MovilidadInteligente.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
