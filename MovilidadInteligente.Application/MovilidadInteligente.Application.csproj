@@ -10,4 +10,12 @@
     <ProjectReference Include="..\MovilidadInteligente.Domain\MovilidadInteligente.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\Repositories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
+  </ItemGroup>
+
 </Project>
