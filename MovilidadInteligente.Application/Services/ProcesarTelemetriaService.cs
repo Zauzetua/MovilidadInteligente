@@ -13,15 +13,15 @@ namespace MovilidadInteligente.Application.Services
     public class ProcesarTelemetriaService
     {
         private readonly IVehiculoRepository _vehiculoRepository;
-        //private readonly INotificadorHub _notificadorHub;
+        private readonly INotificadorHub _notificadorHub;
 
         public ProcesarTelemetriaService(
-            IVehiculoRepository vehiculoRepository
-            //INotificadorHub notificadorHub
+            IVehiculoRepository vehiculoRepository,
+            INotificadorHub notificadorHub
             )
         {
             _vehiculoRepository = vehiculoRepository;
-            //_notificadorHub = notificadorHub;
+            _notificadorHub = notificadorHub;
         }
 
         public async Task EjecutarAsync(Vehiculo vehiculo)
@@ -43,7 +43,7 @@ namespace MovilidadInteligente.Application.Services
 
             var dto = VehiculoMapper.ToDTO(vehiculo);
 
-            //await _notificadorHub.EnviarActualizacionVehiculoAsync(dto);
+            await _notificadorHub.EnviarActualizacionVehiculoAsync(dto);
         }
     }
 }

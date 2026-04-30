@@ -5,6 +5,7 @@ using MovilidadInteligente.Application.Services;
 using MovilidadInteligente.Infrastructure.Data;
 using MovilidadInteligente.Infrastructure.Repositories;
 using MovilidadInteligente.Infrastructure.Workers;
+using MovilidadInteligente.Web.Hubs;
 using MQTTnet;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,13 +42,14 @@ builder.Services.AddHostedService<WatchdogWorker>();
 builder.Services.AddScoped<ProcesarTelemetriaService>();
 builder.Services.AddScoped<MonitorearDesconexionesService>();
 builder.Services.AddScoped<ObtenerVehiculosMantenimientoService>();
+builder.Services.AddScoped<INotificadorHub, NotificadorHubAdapter>();
 
 //builder.Services.AddScoped<INotificadorHub>();
 
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-// app.MapHub<MovilidadHub>("/hubs/movilidad");
+app.MapHub<MovilidadHub>("/hubs/movilidad");
 app.UseRouting();
 
 // Configure the HTTP request pipeline.
