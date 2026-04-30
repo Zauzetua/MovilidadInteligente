@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MovilidadInteligente.Application\MovilidadInteligente.Application.csproj" />
     <ProjectReference Include="..\MovilidadInteligente.Infrastructure\MovilidadInteligente.Infrastructure.csproj" />
   </ItemGroup>
