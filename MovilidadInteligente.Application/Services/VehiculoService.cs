@@ -26,9 +26,9 @@ namespace MovilidadInteligente.Application.Services
             return vehiculos.Select(v => VehiculoMapper.ToDTO(v)).ToList();
         }
 
-        public async Task<VehiculoDTO> GetByIdAsync(int id)
+        public async Task<VehiculoDTO> GetByIdAsync(string id)
         {
-            var vehiculo = await _vehiculoRepository.ObtenerPorIdAsync(id.ToString());
+            var vehiculo = await _vehiculoRepository.ObtenerPorIdAsync(id);
             return VehiculoMapper.ToDTO(vehiculo);
         }
     }

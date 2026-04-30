@@ -27,7 +27,7 @@ namespace MovilidadInteligente.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<VehiculoDTO>> GetById(int id)
+        public async Task<ActionResult<VehiculoDTO>> GetById(string id)
         {
             var vehiculo = await _vehiculoService.GetByIdAsync(id);
             if (vehiculo == null)
