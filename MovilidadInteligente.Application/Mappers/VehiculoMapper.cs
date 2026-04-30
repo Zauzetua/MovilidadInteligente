@@ -2,6 +2,7 @@
 using MovilidadInteligente.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +36,16 @@ namespace MovilidadInteligente.Application.Mappers
                 vehiculoDto.Estado,
                 vehiculoDto.UltimaActualizacion
             );
+        }
+
+        public static List<VehiculoDTO> ToDTOList(List<Vehiculo> vehiculos)
+        {
+            return vehiculos.Select(v => ToDTO(v)).ToList();
+        }
+
+        public static List<Vehiculo> ToEntityList(List<VehiculoDTO> vehiculoDtos)
+        {
+            return vehiculoDtos.Select(dto => ToEntity(dto)).ToList();
         }
     }
 }

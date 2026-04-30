@@ -57,5 +57,13 @@ namespace MovilidadInteligente.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Vehiculo>> ObtenerVehiculosMantenimiento()
+        {
+            return await _context.Vehiculos
+                .Where(v => v.Estado == "Requiere Mantenimiento" || v.Estado == "Necesita recarga")
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

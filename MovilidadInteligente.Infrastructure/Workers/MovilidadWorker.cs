@@ -67,7 +67,7 @@ namespace MovilidadInteligente.Infrastructure.Workers
             await _mqttClient.ConnectAsync(options, stoppingToken);
 
             var subscribeOptions = new MqttTopicFilterBuilder()
-                .WithTopic("movilidad/Inteligente")
+                .WithTopic("movilidad/zonas/#")
                 .Build();
 
             await _mqttClient.SubscribeAsync(subscribeOptions, stoppingToken);

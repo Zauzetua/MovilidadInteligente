@@ -40,6 +40,8 @@ builder.Services.AddHostedService<MovilidadWorker>();
 builder.Services.AddHostedService<WatchdogWorker>();
 builder.Services.AddScoped<ProcesarTelemetriaService>();
 builder.Services.AddScoped<MonitorearDesconexionesService>();
+builder.Services.AddScoped<ObtenerVehiculosMantenimientoService>();
+
 //builder.Services.AddScoped<INotificadorHub>();
 
 var app = builder.Build();
