@@ -32,11 +32,15 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<IVehiculoRepository, VehiculoRepository>();
 builder.Services.AddScoped<IVehiculoService, VehiculoService>();
+builder.Services.AddScoped<AsignarRutaService>();
 
 
 builder.Services.AddSingleton<IMqttService, MqttService>();
 builder.Services.AddHostedService<MovilidadWorker>();
+builder.Services.AddHostedService<WatchdogWorker>();
 builder.Services.AddScoped<ProcesarTelemetriaService>();
+builder.Services.AddScoped<MonitorearDesconexionesService>();
+//builder.Services.AddScoped<INotificadorHub>();
 
 var app = builder.Build();
 

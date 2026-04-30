@@ -14,8 +14,9 @@ namespace MovilidadInteligente.Domain.Entities
         public int Combustible { get; set; }
         public string Tipo { get; set; }
         public string Estado { get; set; }
+        public DateTime UltimaActualizacion { get; set; }
 
-        public Vehiculo(string id, double latitud, double longitud, int combustible, string tipo, string estado)
+        public Vehiculo(string id, double latitud, double longitud, int combustible, string tipo, string estado, DateTime ultimaActualizacion)
         {
             Id = id;
             Latitud = latitud;
@@ -23,6 +24,7 @@ namespace MovilidadInteligente.Domain.Entities
             Combustible = combustible;
             Tipo = tipo;
             Estado = estado;
+            UltimaActualizacion = ultimaActualizacion;
         }
     }
 }

@@ -49,5 +49,13 @@ namespace MovilidadInteligente.Infrastructure.Repositories
         {
             return await _context.Vehiculos.AsNoTracking().ToListAsync();
         }
+
+        public async Task<IEnumerable<Vehiculo>> ObtenerVehiculosInactivosAsync(DateTime limiteInactividad)
+        {
+            return await _context.Vehiculos
+                .Where(v => v.UltimaActualizacion < limiteInactividad && v.Estado != "Desconectado")
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

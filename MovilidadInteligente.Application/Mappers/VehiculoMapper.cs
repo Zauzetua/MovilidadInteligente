@@ -19,7 +19,8 @@ namespace MovilidadInteligente.Application.Mappers
                 Longitud = vehiculo.Longitud,
                 Estado = vehiculo.Estado,
                 Combustible = vehiculo.Combustible,
-                Tipo = vehiculo.Tipo
+                Tipo = vehiculo.Tipo,
+                UltimaActualizacion = vehiculo.UltimaActualizacion
             };
         }
 
@@ -31,7 +32,8 @@ namespace MovilidadInteligente.Application.Mappers
                 vehiculoDto.Longitud,
                 vehiculoDto.Combustible,
                 vehiculoDto.Tipo,
-                vehiculoDto.Estado
+                vehiculoDto.Estado,
+                vehiculoDto.UltimaActualizacion
             );
         }
     }

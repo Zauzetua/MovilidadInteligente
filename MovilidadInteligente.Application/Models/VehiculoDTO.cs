@@ -14,5 +14,6 @@ namespace MovilidadInteligente.Application.Models
         public int Combustible { get; set; }
         public string Tipo { get; set; }
         public string Estado { get; set; }
+        public DateTime UltimaActualizacion { get; set; }
     }
 }

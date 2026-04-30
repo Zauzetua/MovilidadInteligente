@@ -28,6 +28,7 @@ namespace MovilidadInteligente.Infrastructure.Data
                 entity.Property(e => e.Combustible).IsRequired();
                 entity.Property(e => e.Tipo).HasMaxLength(50);
                 entity.Property(e => e.Estado).HasMaxLength(100);
+                entity.Property(e => e.UltimaActualizacion).IsRequired().HasDefaultValue(DateTime.UtcNow);
             });
         }
 

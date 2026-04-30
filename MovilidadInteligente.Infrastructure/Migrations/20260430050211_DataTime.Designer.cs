@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovilidadInteligente.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MovilidadInteligente.Infrastructure.Data;
 namespace MovilidadInteligente.Infrastructure.Migrations
 {
     [DbContext(typeof(MovilidadDbContext))]
-    partial class MovilidadDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430050211_DataTime")]
+    partial class DataTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

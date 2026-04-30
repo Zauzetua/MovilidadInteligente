@@ -13,33 +13,37 @@ namespace MovilidadInteligente.Application.Services
     public class ProcesarTelemetriaService
     {
         private readonly IVehiculoRepository _vehiculoRepository;
-        private readonly INotificadorHub _notificadorHub;
+        //private readonly INotificadorHub _notificadorHub;
 
-        public ProcesarTelemetriaService(IVehiculoRepository vehiculoRepository, INotificadorHub notificadorHub)
+        public ProcesarTelemetriaService(
+            IVehiculoRepository vehiculoRepository
+            //INotificadorHub notificadorHub
+            )
         {
             _vehiculoRepository = vehiculoRepository;
-            _notificadorHub = notificadorHub;
+            //_notificadorHub = notificadorHub;
         }
 
         public async Task EjecutarAsync(Vehiculo vehiculo)
         {
-            if(vehiculo == null )
-                throw new ArgumentNullException(nameof(vehiculo));
+            ArgumentNullException.ThrowIfNull(vehiculo);
 
-            if(vehiculo.Combustible < 15)
+            if (vehiculo.Combustible < 15)
             {
                 vehiculo.Estado = "Necesita recarga";
             }
-            else if(string.IsNullOrEmpty(vehiculo.Estado))
+            else if (string.IsNullOrEmpty(vehiculo.Estado))
             {
                 vehiculo.Estado = "En operacion";
             }
+
+            vehiculo.UltimaActualizacion = DateTime.UtcNow;
 
             await _vehiculoRepository.ActualizarTelemetriaAsync(vehiculo);
 
             var dto = VehiculoMapper.ToDTO(vehiculo);
 
-            await _notificadorHub.EnviarActualizacionVehiculoAsync(dto);
+            //await _notificadorHub.EnviarActualizacionVehiculoAsync(dto);
         }
     }
 }
