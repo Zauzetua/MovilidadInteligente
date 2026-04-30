@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MovilidadInteligente.Application.Interfaces.Services;
+using MovilidadInteligente.Application.Services;
+using MovilidadInteligente.Domain.Entities;
 using MQTTnet;
 using System.Text;
+using System.Text.Json;
 
 namespace MovilidadInteligente.Infrastructure.Workers
 {
@@ -10,11 +14,13 @@ namespace MovilidadInteligente.Infrastructure.Workers
     {
         private IMqttClient _mqttClient;
         private readonly ILogger<MovilidadWorker> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
-        public MovilidadWorker(IMqttService mqttService, ILogger<MovilidadWorker> logger)
+        public MovilidadWorker(IMqttService mqttService, ILogger<MovilidadWorker> logger, IServiceProvider serviceProvider)
         {
             _mqttClient = mqttService.Client;
             _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -25,14 +31,39 @@ namespace MovilidadInteligente.Infrastructure.Workers
             _mqttClient = factory.CreateMqttClient();
 
             var options = new MqttClientOptionsBuilder()
-                .WithTcpServer("broker.hivemq.com", 1883)
+                .WithTcpServer("localhost", 1883)
                 .Build();
 
-            _mqttClient.ApplicationMessageReceivedAsync += e =>
+            _mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
                 _logger.LogInformation($"Mensaje recibido en topic {e.ApplicationMessage.Topic}: {payload}");
-                return Task.CompletedTask;
+                try
+                {
+                    // deserializo el json de mi simulador pasandolo a mi entidad de dominio
+                    // uso una configuracion para ignorar mayusculas y minusculas en las propiedades
+                    var opcionesJson = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var vehiculo = JsonSerializer.Deserialize<Vehiculo>(payload, opcionesJson);
+
+                    if (vehiculo != null)
+                    {
+                        // creo un scope aislado para manejar esta coordenada sin chocar con otras
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            // resuelvo mi caso de uso desde el scope fresco
+                            var procesarService = scope.ServiceProvider.GetRequiredService<ProcesarTelemetriaService>();
+
+                            // ejecuto mis reglas de negocio y actualizo la bd
+                            await procesarService.EjecutarAsync(vehiculo);
+                        }
+
+                        _logger.LogInformation($"[Backend] Procese exitosamente el vehiculo: {vehiculo.Id}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"[Backend] Error critico al procesar la telemetria: {ex.Message}");
+                }
             };
 
             await _mqttClient.ConnectAsync(options, stoppingToken);
