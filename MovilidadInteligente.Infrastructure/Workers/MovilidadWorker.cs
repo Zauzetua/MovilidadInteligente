@@ -40,8 +40,6 @@ namespace MovilidadInteligente.Infrastructure.Workers
                 _logger.LogInformation($"Mensaje recibido en topic {e.ApplicationMessage.Topic}: {payload}");
                 try
                 {
-                    // deserializo el json de mi simulador pasandolo a mi entidad de dominio
-                    // uso una configuracion para ignorar mayusculas y minusculas en las propiedades
                     var opcionesJson = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     var vehiculo = JsonSerializer.Deserialize<Vehiculo>(payload, opcionesJson);
 

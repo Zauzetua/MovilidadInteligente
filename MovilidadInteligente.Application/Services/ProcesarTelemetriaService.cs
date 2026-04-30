@@ -1,4 +1,6 @@
 ﻿using MovilidadInteligente.Application.Interfaces.Repositories;
+using MovilidadInteligente.Application.Interfaces.Services;
+using MovilidadInteligente.Application.Mappers;
 using MovilidadInteligente.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,10 +13,12 @@ namespace MovilidadInteligente.Application.Services
     public class ProcesarTelemetriaService
     {
         private readonly IVehiculoRepository _vehiculoRepository;
+        private readonly INotificadorHub _notificadorHub;
 
-        public ProcesarTelemetriaService(IVehiculoRepository vehiculoRepository)
+        public ProcesarTelemetriaService(IVehiculoRepository vehiculoRepository, INotificadorHub notificadorHub)
         {
             _vehiculoRepository = vehiculoRepository;
+            _notificadorHub = notificadorHub;
         }
 
         public async Task EjecutarAsync(Vehiculo vehiculo)
@@ -33,7 +37,9 @@ namespace MovilidadInteligente.Application.Services
 
             await _vehiculoRepository.ActualizarTelemetriaAsync(vehiculo);
 
-            // aqui inyectaremos tu interfaz INotificadorHub para empujar el objeto vehiculo al front
+            var dto = VehiculoMapper.ToDTO(vehiculo);
+
+            await _notificadorHub.EnviarActualizacionVehiculoAsync(dto);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace MovilidadInteligente.Infrastructure.Repositories
             var vehiculo = await _context.Vehiculos.FindAsync(id);
             if (vehiculo == null)
             {
-                throw new KeyNotFoundException($"No se encontró un vehículo con el ID '{id}'.");
+                throw new KeyNotFoundException($"No se encontro un vehículo con el ID '{id}'.");
             }
 
             return vehiculo;
