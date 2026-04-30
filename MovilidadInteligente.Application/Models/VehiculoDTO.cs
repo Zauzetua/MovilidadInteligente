@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MovilidadInteligente.Domain.Entities
+namespace MovilidadInteligente.Application.Models
 {
-    public class Vehiculo
+    public class VehiculoDTO
     {
         public string Id { get; set; }
         public double Latitud { get; set; }
@@ -14,15 +14,5 @@ namespace MovilidadInteligente.Domain.Entities
         public int Combustible { get; set; }
         public string Tipo { get; set; }
         public string Estado { get; set; }
-
-        public Vehiculo(string id, double latitud, double longitud, int combustible, string tipo, string estado)
-        {
-            Id = id;
-            Latitud = latitud;
-            Longitud = longitud;
-            Combustible = combustible;
-            Tipo = tipo;
-            Estado = estado;
-        }
     }
 }

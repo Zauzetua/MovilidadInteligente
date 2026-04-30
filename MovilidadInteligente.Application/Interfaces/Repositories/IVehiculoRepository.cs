@@ -11,5 +11,6 @@ namespace MovilidadInteligente.Application.Interfaces.Repositories
     {
         Task ActualizarTelemetriaAsync(Vehiculo vehiculo);
         Task<Vehiculo> ObtenerPorIdAsync(string id);
+        Task<IEnumerable<Vehiculo>> ObtenerTodosAsync();
     }
 }

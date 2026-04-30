@@ -18,6 +18,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<IVehiculoRepository, VehiculoRepository>();
+builder.Services.AddScoped<IVehiculoService, VehiculoService>();
+
 
 builder.Services.AddSingleton<IMqttService, MqttService>();
 builder.Services.AddHostedService<MovilidadWorker>();
