@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovilidadInteligente.Web", "MovilidadInteligente.Web\MovilidadInteligente.Web.csproj", "{E244368F-2810-4D4F-B634-CC005BA090D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovilidadInteligente.Web", "MovilidadInteligente.Web\MovilidadInteligente.Web.csproj", "{E244368F-2810-4D4F-B634-CC005BA090D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovilidadInteligente.Application", "MovilidadInteligente.Application\MovilidadInteligente.Application.csproj", "{01219A07-AE20-45F8-B8B2-D956FC8FF482}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovilidadInteligente.Application", "MovilidadInteligente.Application\MovilidadInteligente.Application.csproj", "{01219A07-AE20-45F8-B8B2-D956FC8FF482}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovilidadInteligente.Infrastructure", "MovilidadInteligente.Infrastructure\MovilidadInteligente.Infrastructure.csproj", "{1DD6683A-EB43-4BCA-BDFB-A99F76009911}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovilidadInteligente.Infrastructure", "MovilidadInteligente.Infrastructure\MovilidadInteligente.Infrastructure.csproj", "{1DD6683A-EB43-4BCA-BDFB-A99F76009911}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovilidadInteligente.Domain", "MovilidadInteligente.Domain\MovilidadInteligente.Domain.csproj", "{DA82B505-D279-4230-A719-3188F60A1C86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovilidadInteligente.Domain", "MovilidadInteligente.Domain\MovilidadInteligente.Domain.csproj", "{DA82B505-D279-4230-A719-3188F60A1C86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovilidadInteligente.Gateway", "MovilidadInteligente.Gateway\MovilidadInteligente.Gateway.csproj", "{9BF232C4-7391-42EC-BCD8-AB8456E49B7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovilidadInteligente.Gateway", "MovilidadInteligente.Gateway\MovilidadInteligente.Gateway.csproj", "{9BF232C4-7391-42EC-BCD8-AB8456E49B7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimuladorVehiculos", "SimuladorVehiculos\SimuladorVehiculos.csproj", "{7FAC1B1A-C227-4493-8B78-8F7B30672F44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{9BF232C4-7391-42EC-BCD8-AB8456E49B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BF232C4-7391-42EC-BCD8-AB8456E49B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BF232C4-7391-42EC-BCD8-AB8456E49B7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FAC1B1A-C227-4493-8B78-8F7B30672F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FAC1B1A-C227-4493-8B78-8F7B30672F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FAC1B1A-C227-4493-8B78-8F7B30672F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FAC1B1A-C227-4493-8B78-8F7B30672F44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
