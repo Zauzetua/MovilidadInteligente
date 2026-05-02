@@ -15,5 +15,6 @@ namespace MovilidadInteligente.Application.Interfaces.Repositories
         Task<IEnumerable<Vehiculo>> ObtenerVehiculosInactivosAsync(DateTime limiteInactividad);
         Task<IEnumerable<Vehiculo>> ObtenerVehiculosMantenimiento();
         Task<Vehiculo> ActualizarEstadoVehiculo(Vehiculo vehiculo);
+        Task<IEnumerable<Vehiculo>> ObtenerVehiculosDisponiblesAsync();
     }
 }

@@ -51,5 +51,16 @@ namespace MovilidadInteligente.Web.Controllers
             }
         }
 
+        [HttpGet("Disponibles")]
+        public async Task<ActionResult<IEnumerable<VehiculoDTO>>> GetDisponibles()
+        {
+            var vehiculos = await _vehiculoService.ObtenerVehiculosDisponibles();
+            if (vehiculos == null || !vehiculos.Any())
+            {
+                return NotFound();
+            }
+            return Ok(vehiculos);
+        }
+
     }
 }

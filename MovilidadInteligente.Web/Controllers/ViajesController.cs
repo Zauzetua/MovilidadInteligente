@@ -11,17 +11,19 @@ namespace MovilidadInteligente.Web.Controllers
     {
         private readonly AsignarRutaService _asignarRutaService;
         private readonly IDespachadorVehiculos _despachadorVehiculos;
+        private readonly CatalogoRutasService _catalogoRutasService;
 
-        public ViajesController(AsignarRutaService asignarRutaService, IDespachadorVehiculos despachadorVehiculos)
+        public ViajesController(AsignarRutaService asignarRutaService, IDespachadorVehiculos despachadorVehiculos, CatalogoRutasService catalogoRutasService)
         {
             _asignarRutaService = asignarRutaService;
             _despachadorVehiculos = despachadorVehiculos;
+            _catalogoRutasService = catalogoRutasService;
         }
 
         [HttpPost("iniciar")]
         public async Task<IActionResult> IniciarViaje([FromBody] PeticionViaje peticion)
         {
-            var mejorRuta = await _asignarRutaService.AsignarRuta(peticion.Origen, peticion.Destino);
+            var mejorRuta = _catalogoRutasService.ObtenerRutaDinamica(peticion.Origen, peticion.Destino);
 
             if (mejorRuta == null) return NotFound("No hay rutas validas para esos puntos.");
 

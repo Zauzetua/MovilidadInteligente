@@ -78,5 +78,13 @@ namespace MovilidadInteligente.Infrastructure.Repositories
             return vehiculo;
 
         }
+
+        public async Task<IEnumerable<Vehiculo>> ObtenerVehiculosDisponiblesAsync()
+        {
+            return await _context.Vehiculos
+                .Where(v => v.Estado == "Disponible")
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

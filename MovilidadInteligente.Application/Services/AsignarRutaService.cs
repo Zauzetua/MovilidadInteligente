@@ -13,6 +13,7 @@ namespace MovilidadInteligente.Application.Services
 
         public AsignarRutaService()
         {
+            /*
             _rutasDisponibles = new List<RutaPredeterminada>
             {
                 new RutaPredeterminada
@@ -28,6 +29,8 @@ namespace MovilidadInteligente.Application.Services
                     Coordenadas = new List<Coordenada> { new() { Latitud = 27.071, Longitud = -109.441 }, new Coordenada { Latitud = 27.078, Longitud = -109.448 } }
                 }
             };
+            */
+            _rutasDisponibles = new List<RutaPredeterminada>();
         }
 
         public async Task<RutaPredeterminada?> AsignarRuta(string origen, string destino)

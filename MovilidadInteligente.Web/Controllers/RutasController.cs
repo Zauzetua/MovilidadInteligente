@@ -8,10 +8,12 @@ namespace MovilidadInteligente.Web.Controllers
     public class RutasController : ControllerBase
     {
         private readonly AsignarRutaService _asignarRutaService;
+        private readonly CatalogoRutasService _catalogoRutasService;
 
-        public RutasController(AsignarRutaService asignarRutaService)
+        public RutasController(AsignarRutaService asignarRutaService, CatalogoRutasService catalogoRutasService)
         {
             _asignarRutaService = asignarRutaService;
+            _catalogoRutasService = catalogoRutasService;
         }
 
         [HttpGet("optima")]
@@ -20,11 +22,18 @@ namespace MovilidadInteligente.Web.Controllers
             if (string.IsNullOrEmpty(origen) || string.IsNullOrEmpty(destino))
                 return BadRequest("El origen y destino son requeridos.");
 
-            var rutaOptima = _asignarRutaService.AsignarRuta(origen, destino);
+            var rutaOptima = _catalogoRutasService.ObtenerRutaDinamica(origen, destino);
             if (rutaOptima == null)
                 return NotFound("No se encontraron rutas disponibles para el origen y destino especificados.");
 
             return Ok(rutaOptima);
+        }
+
+        [HttpGet("predeterminadas")]
+        public IActionResult ObtenerRutasPredeterminadas()
+        {
+            var rutas = _catalogoRutasService.ObtenerRutasPredeterminadas();
+            return Ok(rutas);
         }
 
     }

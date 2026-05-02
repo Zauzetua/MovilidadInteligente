@@ -46,6 +46,8 @@ builder.Services.AddScoped<ObtenerVehiculosMantenimientoService>();
 builder.Services.AddScoped<IVehiculoService, VehiculoService>();
 builder.Services.AddScoped<INotificadorHub, NotificadorHubAdapter>();
 builder.Services.AddScoped<IDespachadorVehiculos, MqttDespachadorService>();
+builder.Services.AddScoped<CatalogoRutasService>();
+builder.Services.AddScoped<UbicacionesService>();
 
 //builder.Services.AddScoped<INotificadorHub>();
 
