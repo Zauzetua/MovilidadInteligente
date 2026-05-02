@@ -11,6 +11,7 @@ namespace MovilidadInteligente.Application.Interfaces.Services
     {
         Task<IEnumerable<VehiculoDTO>> GetAllAsync();
         Task<VehiculoDTO> GetByIdAsync(string id);
+        Task<VehiculoDTO> CambiarEstadoVehiculo(string id, string nuevoEstado);
         //Task<VehiculoDTO> CreateAsync(VehiculoDTO vehiculoDto);
         //Task<VehiculoDTO> UpdateAsync(int id, VehiculoDTO vehiculoDto);
         //Task<bool> DeleteAsync(int id);

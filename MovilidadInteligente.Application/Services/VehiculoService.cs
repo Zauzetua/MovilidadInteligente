@@ -31,5 +31,16 @@ namespace MovilidadInteligente.Application.Services
             var vehiculo = await _vehiculoRepository.ObtenerPorIdAsync(id);
             return VehiculoMapper.ToDTO(vehiculo);
         }
+
+        public async Task<VehiculoDTO> CambiarEstadoVehiculo(string id, string nuevoEstado)
+        {
+            var vehiculo = await _vehiculoRepository.ObtenerPorIdAsync(id);
+            if (vehiculo == null)
+                throw new Exception($"Vehiculo con ID {id} no encontrado.");
+
+            vehiculo.Estado = nuevoEstado;
+            await _vehiculoRepository.ActualizarEstadoVehiculo(vehiculo);
+            return VehiculoMapper.ToDTO(vehiculo);
+        }
     }
 }

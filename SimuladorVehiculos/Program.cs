@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MQTTnet;
@@ -11,85 +11,78 @@ class Program
         var factory = new MqttClientFactory();
         var client = factory.CreateMqttClient();
 
+        string miVehiculoId = "Scooter-001";
+        int miBateria = 100;
+
         var options = new MqttClientOptionsBuilder()
             .WithTcpServer("localhost", 1883)
             .Build();
 
-        await client.ConnectAsync(options);
-        Console.WriteLine("Simulador Inteligente conectado al Broker.");
-
-        string vehiculoId = "Scooter-Inteligente";
-        int combustible = 100;
-
-        // defino una ruta preestablecida (waypoints)
-        // en un sistema real, estas las consultarias a tu API
-        var ruta = new List<Coordenada>
-{
-    new Coordenada { Lat = 27.0812, Lon = -109.4438 },
-    new Coordenada { Lat = 27.0805, Lon = -109.4445 },
-    new Coordenada { Lat = 27.0798, Lon = -109.4452 },
-    new Coordenada { Lat = 27.0791, Lon = -109.4460 },
-    new Coordenada { Lat = 27.0784, Lon = -109.4467 },
-    new Coordenada { Lat = 27.0777, Lon = -109.4475 }
-};
-
-        Console.WriteLine($"Iniciando viaje para {vehiculoId}...");
-
-        // recorro la ruta punto por punto
-        foreach (var punto in ruta)
+        // 1. definimos que hara el simulador cuando le llegue un mensaje de la API
+        client.ApplicationMessageReceivedAsync += async e =>
         {
-            // simulo que el motor consume bateria al avanzar
-            combustible -= 2;
 
-            var telemetria = new
+            string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
+            //Por si llega un mensaje vacio o con formato incorrecto, evitamos que el simulador se caiga
+            if (payload == null)
+                return;
+
+            Console.WriteLine($"\n[ORDEN RECIBIDA] Iniciando viaje...");
+
+            // deserializamos la ruta que nos mando el backend
+            var rutaAsignada = JsonSerializer.Deserialize<RutaRecibida>(payload);
+
+            if (rutaAsignada?.Coordenadas == null || rutaAsignada.Coordenadas.Count == 0)
             {
-                Id = vehiculoId,
-                Latitud = punto.Lat,
-                Longitud = punto.Lon,
-                Combustible = combustible,
-                Estado = "En Ruta",
-                Tipo = "Scooter"
-            };
+                Console.WriteLine("Ruta invalida");
+                return;
+            }
 
-            string json = JsonSerializer.Serialize(telemetria);
+            // comenzamos a movernos por las coordenadas
+            foreach (var punto in rutaAsignada.Coordenadas)
+            {
+                miBateria -= 1; // desgastamos bateria
 
-            var message = new MqttApplicationMessageBuilder()
-                .WithTopic("movilidad/zonas/norte")
-                .WithPayload(json)
-                .Build();
+                // publicamos telemetria (como ya lo hacia antes)
+                await PublicarTelemetriaAsync(client, miVehiculoId, punto.Latitud, punto.Longitud, miBateria, "Ocupado");
 
-            await client.PublishAsync(message);
-            Console.WriteLine($"[{vehiculoId}] Avanzo a ({punto.Lat}, {punto.Lon}) | Bateria: {combustible}%");
+                await Task.Delay(2000); // 2 segundos entre cada punto
+            }
 
-            // espero 3 segundos simulando el tiempo que le toma llegar al siguiente punto
-            await Task.Delay(3000);
-        }
+            Console.WriteLine("[LLEGADA] Viaje finalizado. Esperando nueva orden...");
+            // al terminar, avisamos que volvemos a estar disponibles
+            await PublicarTelemetriaAsync(client, miVehiculoId, rutaAsignada.Coordenadas[^1].Latitud, rutaAsignada.Coordenadas[^1].Longitud, miBateria, "Disponible");
 
-        Console.WriteLine("El vehiculo ha llegado a su destino.");
-
-        // aqui informamos que termino el viaje
-        var reporteFinal = new
-        {
-            Id = vehiculoId,
-            Latitud = ruta[^1].Lat, // tomo la ultima coordenada
-            Longitud = ruta[^1].Lon,
-            Combustible = combustible,
-            Estado = "Disponible", // lo vuelvo a poner en renta
-            Tipo = "Scooter"
         };
 
-        var finalMessage = new MqttApplicationMessageBuilder()
-            .WithTopic("movilidad/zonas/norte")
-            .WithPayload(JsonSerializer.Serialize(reporteFinal))
+        await client.ConnectAsync(options);
+
+        // 2. nos suscribimos a nuestro propio canal de comandos
+        var subscribeOptions = new MqttClientSubscribeOptionsBuilder()
+            .WithTopicFilter($"movilidad/vehiculos/{miVehiculoId}")
             .Build();
 
-        await client.PublishAsync(finalMessage);
+        await client.SubscribeAsync(subscribeOptions);
+
+        Console.WriteLine($"[{miVehiculoId}] Conectado y esperando instrucciones en el paradero...");
+
+        // publicamos nuestro estado inicial disponible
+        await PublicarTelemetriaAsync(client, miVehiculoId, 27.070, -109.440, miBateria, "Disponible");
+
+        // evitamos que la consola se cierre
+        Console.ReadLine();
+    }
+
+    static async Task PublicarTelemetriaAsync(IMqttClient client, string id, double lat, double lon, int bat, string estado)
+    {
+        var json = JsonSerializer.Serialize(new { Id = id, Latitud = lat, Longitud = lon, Combustible = bat, Estado = estado });
+        var message = new MqttApplicationMessageBuilder().WithTopic("movilidad/zonas/norte").WithPayload(json).Build();
+        await client.PublishAsync(message);
+        Console.WriteLine($"Publicando: {estado} | Bat: {bat}% | Pos: ({lat}, {lon})");
     }
 }
 
-// clase auxiliar para mapear mi ruta
-class Coordenada
-{
-    public double Lat { get; set; }
-    public double Lon { get; set; }
-}
+// clases auxiliares para deserializar el json de la ruta
+class RutaRecibida { public List<Punto> Coordenadas { get; set; } }
+class Punto { public double Latitud { get; set; } public double Longitud { get; set; } }

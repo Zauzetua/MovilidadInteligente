@@ -4,6 +4,7 @@ using MovilidadInteligente.Application.Interfaces.Services;
 using MovilidadInteligente.Application.Services;
 using MovilidadInteligente.Infrastructure.Data;
 using MovilidadInteligente.Infrastructure.Repositories;
+using MovilidadInteligente.Infrastructure.Services;
 using MovilidadInteligente.Infrastructure.Workers;
 using MovilidadInteligente.Web.Hubs;
 using MQTTnet;
@@ -38,11 +39,13 @@ builder.Services.AddScoped<AsignarRutaService>();
 
 builder.Services.AddSingleton<IMqttService, MqttService>();
 builder.Services.AddHostedService<MovilidadWorker>();
-builder.Services.AddHostedService<WatchdogWorker>();
+//builder.Services.AddHostedService<WatchdogWorker>();
 builder.Services.AddScoped<ProcesarTelemetriaService>();
 builder.Services.AddScoped<MonitorearDesconexionesService>();
 builder.Services.AddScoped<ObtenerVehiculosMantenimientoService>();
+builder.Services.AddScoped<IVehiculoService, VehiculoService>();
 builder.Services.AddScoped<INotificadorHub, NotificadorHubAdapter>();
+builder.Services.AddScoped<IDespachadorVehiculos, MqttDespachadorService>();
 
 //builder.Services.AddScoped<INotificadorHub>();
 

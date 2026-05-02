@@ -37,5 +37,19 @@ namespace MovilidadInteligente.Web.Controllers
             return Ok(vehiculo);
         }
 
+        [HttpPost("CambiarEstado")]
+        public async Task<IActionResult> CambiarEstado([FromBody] CambiarEstadoRequest request)
+        {
+            try
+            {
+                await _vehiculoService.CambiarEstadoVehiculo(request.IdVehiculo, request.NuevoEstado);
+                return Ok(new { Mensaje = $"Estado del vehiculo {request.IdVehiculo} cambiado a {request.NuevoEstado}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
     }
 }

@@ -65,5 +65,18 @@ namespace MovilidadInteligente.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<Vehiculo> ActualizarEstadoVehiculo(Vehiculo vehiculo)
+        {
+            var existe = await _context.Vehiculos.AnyAsync(v => v.Id == vehiculo.Id);
+
+            if (!existe)
+                throw new KeyNotFoundException($"No se encontro un vehículo con el ID '{vehiculo.Id}'.");
+
+            _context.Vehiculos.Update(vehiculo);
+            await _context.SaveChangesAsync();
+            return vehiculo;
+
+        }
     }
 }
