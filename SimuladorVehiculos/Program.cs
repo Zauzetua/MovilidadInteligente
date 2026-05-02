@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -8,81 +9,96 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        Console.WriteLine("Iniciando Enjambre de Simuladores IoT...");
+
+        // cambiar esta lista quemada por un llamado HTTP a la API.
+        var vehiculosIniciales = new List<VehiculoInicio>
+        {
+            new VehiculoInicio { Id = "Scooter-001", Lat = 27.070, Lon = -109.440 },
+            new VehiculoInicio { Id = "Scooter-002", Lat = 27.078, Lon = -109.448 }
+        };
+
+        var tareas = new List<Task>();
+
+        foreach (var vehiculo in vehiculosIniciales)
+        {
+            // lanzamos un hilo independiente por cada vehiculo
+            tareas.Add(IniciarSimuladorVehiculoAsync(vehiculo.Id, vehiculo.Lat, vehiculo.Lon));
+        }
+
+        // esperamos a que todos los hilos corran en paralelo
+        await Task.WhenAll(tareas);
+    }
+
+    static async Task IniciarSimuladorVehiculoAsync(string vehiculoId, double latInicial, double lonInicial)
+    {
         var factory = new MqttClientFactory();
         var client = factory.CreateMqttClient();
-
-        string miVehiculoId = "Scooter-001";
         int miBateria = 100;
 
         var options = new MqttClientOptionsBuilder()
             .WithTcpServer("localhost", 1883)
+            .WithClientId($"Simulador_{vehiculoId}")
             .Build();
 
-        // 1. definimos que hara el simulador cuando le llegue un mensaje de la API
         client.ApplicationMessageReceivedAsync += async e =>
         {
-
             string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-            //Por si llega un mensaje vacio o con formato incorrecto, evitamos que el simulador se caiga
-            if (payload == null)
+            if (string.IsNullOrEmpty(payload))
                 return;
 
-            Console.WriteLine($"\n[ORDEN RECIBIDA] Iniciando viaje...");
+            Console.WriteLine($"\n[{vehiculoId}] [ORDEN RECIBIDA] Iniciando viaje...");
 
-            // deserializamos la ruta que nos mando el backend
             var rutaAsignada = JsonSerializer.Deserialize<RutaRecibida>(payload);
 
             if (rutaAsignada?.Coordenadas == null || rutaAsignada.Coordenadas.Count == 0)
             {
-                Console.WriteLine("Ruta invalida");
+                Console.WriteLine($"[{vehiculoId}] Ruta invalida");
                 return;
             }
 
-            // comenzamos a movernos por las coordenadas
             foreach (var punto in rutaAsignada.Coordenadas)
             {
-                miBateria -= 1; // desgastamos bateria
+                miBateria -= 1;
 
-                // publicamos telemetria (como ya lo hacia antes)
-                await PublicarTelemetriaAsync(client, miVehiculoId, punto.Latitud, punto.Longitud, miBateria, "Ocupado");
+                await PublicarTelemetriaAsync(client, vehiculoId, punto.Latitud, punto.Longitud, miBateria, "Ocupado");
 
-                await Task.Delay(2000); // 2 segundos entre cada punto
+                await Task.Delay(2000);
             }
 
-            Console.WriteLine("[LLEGADA] Viaje finalizado. Esperando nueva orden...");
-            // al terminar, avisamos que volvemos a estar disponibles
-            await PublicarTelemetriaAsync(client, miVehiculoId, rutaAsignada.Coordenadas[^1].Latitud, rutaAsignada.Coordenadas[^1].Longitud, miBateria, "Disponible");
-
+            Console.WriteLine($"[{vehiculoId}] [LLEGADA] Viaje finalizado.");
+            var ultimoPunto = rutaAsignada.Coordenadas[^1];
+            await PublicarTelemetriaAsync(client, vehiculoId, ultimoPunto.Latitud, ultimoPunto.Longitud, miBateria, "Disponible");
         };
 
         await client.ConnectAsync(options);
 
-        // 2. nos suscribimos a nuestro propio canal de comandos
-        var subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-            .WithTopicFilter($"movilidad/vehiculos/{miVehiculoId}")
-            .Build();
+        await client.SubscribeAsync(
+            new MqttClientSubscribeOptionsBuilder()
+                .WithTopicFilter($"movilidad/vehiculos/{vehiculoId}")
+                .Build()
+        );
 
-        await client.SubscribeAsync(subscribeOptions);
+        Console.WriteLine($"[{vehiculoId}] Conectado y esperando instrucciones...");
 
-        Console.WriteLine($"[{miVehiculoId}] Conectado y esperando instrucciones en el paradero...");
+        await PublicarTelemetriaAsync(client, vehiculoId, latInicial, lonInicial, miBateria, "Disponible");
 
-        // publicamos nuestro estado inicial disponible
-        await PublicarTelemetriaAsync(client, miVehiculoId, 27.070, -109.440, miBateria, "Disponible");
-
-        // evitamos que la consola se cierre
-        Console.ReadLine();
+        // 🔥 CLAVE: mantener vivo el simulador
+        await Task.Delay(Timeout.Infinite);
     }
 
     static async Task PublicarTelemetriaAsync(IMqttClient client, string id, double lat, double lon, int bat, string estado)
     {
         var json = JsonSerializer.Serialize(new { Id = id, Latitud = lat, Longitud = lon, Combustible = bat, Estado = estado });
         var message = new MqttApplicationMessageBuilder().WithTopic("movilidad/zonas/norte").WithPayload(json).Build();
+
         await client.PublishAsync(message);
-        Console.WriteLine($"Publicando: {estado} | Bat: {bat}% | Pos: ({lat}, {lon})");
+        Console.WriteLine($"[{id}] Publicando: {estado} | Bat: {bat}% | Pos: ({lat}, {lon})");
     }
 }
 
-// clases auxiliares para deserializar el json de la ruta
+// clases auxiliares para inicializar y deserializar
+class VehiculoInicio { public string Id { get; set; } public double Lat { get; set; } public double Lon { get; set; } }
 class RutaRecibida { public List<Punto> Coordenadas { get; set; } }
 class Punto { public double Latitud { get; set; } public double Longitud { get; set; } }

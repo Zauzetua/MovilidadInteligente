@@ -356,5 +356,31 @@ namespace MovilidadInteligente.Application.Services
         {
             return _rutasDisponibles;
         }
+
+        public Task OcuparRuta(string rutaId)
+        {
+            var ruta = _rutasDisponibles.FirstOrDefault(r => r.Id == rutaId);
+            if (ruta == null)
+            {
+                Console.WriteLine($"Ruta {rutaId} no encontrada.");
+                return Task.CompletedTask;
+            }
+            ruta.NivelTraficoActual++;
+            Console.WriteLine($"Ruta {rutaId} marcada como ocupada.");
+            return Task.CompletedTask;
+        }
+
+        public Task LiberarRuta(string rutaId)
+        {
+            var ruta = _rutasDisponibles.FirstOrDefault(r => r.Id == rutaId);
+            if (ruta == null)
+            {
+                Console.WriteLine($"Ruta {rutaId} no encontrada.");
+                return Task.CompletedTask;
+            }
+            ruta.NivelTraficoActual = Math.Max(0, ruta.NivelTraficoActual - 1);
+            Console.WriteLine($"Ruta {rutaId} liberada.");
+            return Task.CompletedTask;
+        }
     }
 }
