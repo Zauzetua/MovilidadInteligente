@@ -27,10 +27,7 @@ namespace MovilidadInteligente.Web.Controllers
 
             if (mejorRuta == null) return NotFound("No hay rutas validas para esos puntos.");
 
-            // 2. le mandamos la orden al vehiculo por mqtt
             await _despachadorVehiculos.EnviarComandoRutaAsync(peticion.VehiculoId, mejorRuta);
-
-            // nota: aqui tambien actualizarias el estado del vehiculo a "Ocupado" en BD
 
             return Ok(new { Mensaje = $"Vehiculo {peticion.VehiculoId} despachado a {peticion.Destino}" });
 

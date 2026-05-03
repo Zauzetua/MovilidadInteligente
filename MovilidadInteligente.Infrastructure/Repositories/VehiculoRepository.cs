@@ -34,6 +34,18 @@ namespace MovilidadInteligente.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Vehiculo> AddAsync(Vehiculo vehiculo)
+        {
+            var existe = await _context.Vehiculos.AnyAsync(v => v.Id == vehiculo.Id);
+
+            if (existe)
+                throw new InvalidOperationException($"El vehículo con ID '{vehiculo.Id}' ya existe.");
+
+            await _context.Vehiculos.AddAsync(vehiculo);
+            await _context.SaveChangesAsync();
+            return vehiculo;
+        }
+
         public async Task<Vehiculo> ObtenerPorIdAsync(string id)
         {
             var vehiculo = await _context.Vehiculos.FindAsync(id);

@@ -9,6 +9,7 @@ namespace MovilidadInteligente.Application.Interfaces.Repositories
 {
     public interface IVehiculoRepository
     {
+        Task<Vehiculo> AddAsync(Vehiculo vehiculo);
         Task ActualizarTelemetriaAsync(Vehiculo vehiculo);
         Task<Vehiculo> ObtenerPorIdAsync(string id);
         Task<IEnumerable<Vehiculo>> ObtenerTodosAsync();

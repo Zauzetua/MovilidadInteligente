@@ -62,5 +62,22 @@ namespace MovilidadInteligente.Web.Controllers
             return Ok(vehiculos);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] VehiculoDTO vehiculoDto)
+        {
+            if (vehiculoDto == null || string.IsNullOrWhiteSpace(vehiculoDto.Id))
+                return BadRequest(new { Error = "Payload inválido" });
+
+            try
+            {
+                var creado = await _vehiculoService.CreateAsync(vehiculoDto);
+                return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
     }
 }
