@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MovilidadInteligente.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ namespace MovilidadInteligente.Infrastructure.Data
         public DbSet<RutaPredeterminada> RutasPredeterminadas { get; set; }
         public DbSet<Coordenada> Coordenadas { get; set; }
         public DbSet<HistorialViaje> HistorialViajes { get; set; }
+        public DbSet<Pago> Pagos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -108,6 +109,26 @@ namespace MovilidadInteligente.Infrastructure.Data
                     .WithMany()
                     .HasForeignKey(e => e.DestinoLocationId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Pago>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.HistorialViajeId).IsRequired();
+                entity.Property(e => e.Monto).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Moneda).IsRequired().HasMaxLength(3).HasDefaultValue("MXN");
+                entity.Property(e => e.Metodo).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Estado).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Referencia).HasMaxLength(100);
+                entity.Property(e => e.FechaUtc).IsRequired().HasDefaultValueSql("sysutcdatetime()");
+
+                entity.HasOne(e => e.HistorialViaje)
+                    .WithMany()
+                    .HasForeignKey(e => e.HistorialViajeId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Pagos_HistorialViajes");
+
+                entity.ToTable("Pagos");
             });
         }
 

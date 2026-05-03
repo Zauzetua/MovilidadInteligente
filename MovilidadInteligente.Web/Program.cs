@@ -35,11 +35,13 @@ builder.Services.AddScoped<IVehiculoRepository, VehiculoRepository>();
 builder.Services.AddScoped<IUbicacionRepository, UbicacionRepository>();
 builder.Services.AddScoped<IRutaRepository, RutaRepository>();
 builder.Services.AddScoped<IHistorialViajeRepository, HistorialViajeRepository>();
+builder.Services.AddScoped<IPagoRepository, PagoRepository>();
 
 builder.Services.AddScoped<IVehiculoService, VehiculoService>();
 builder.Services.AddScoped<IUbicacionService, UbicacionService>();
 builder.Services.AddScoped<IRutaService, RutaService>();
 builder.Services.AddScoped<IHistorialViajeService, HistorialViajeService>();
+builder.Services.AddScoped<IPagoService, PagoService>();
 
 //builder.Services.AddScoped<AsignarRutaService>();
 builder.Services.AddScoped<CatalogoRutasService>();

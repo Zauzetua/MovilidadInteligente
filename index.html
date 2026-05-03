@@ -361,6 +361,54 @@
             color: #721c24;
         }
 
+        .vehicle-status.nodisponible,
+        .vehicle-status.no\ disponible {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .vehicle-controls {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .fuel-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .fuel-slider-row input[type=range] {
+            flex: 1;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .fuel-value-badge {
+            font-weight: 700;
+            min-width: 32px;
+            text-align: right;
+            color: var(--dark);
+        }
+
+        .vehicle-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-xs {
+            padding: 4px 8px;
+            font-size: 10px;
+            width: auto;
+            border-radius: 4px;
+        }
+
         .vehicle-info {
             font-size: 12px;
             color: var(--gray);
@@ -561,6 +609,149 @@
                 flex: 1;
             }
         }
+
+        /* ========== PAGOS ========== */
+        .pagos-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .pago-stat-card {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .pago-stat-card .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .pago-stat-card .stat-label {
+            font-size: 10px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .pago-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .pago-card:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .pago-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .pago-monto {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .pago-moneda {
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        .pago-estado {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .pago-estado.completado, .pago-estado.pagado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .pago-estado.pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pago-estado.cancelado, .pago-estado.fallido {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .pago-estado.reembolsado {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .pago-meta {
+            font-size: 11px;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        .pago-meta strong {
+            color: var(--dark);
+        }
+
+        .pago-metodo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e9ecef;
+            color: var(--dark);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .pagos-filter-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .pagos-filter-row select {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: inherit;
+        }
+
+        .pagos-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .pago-referencia {
+            font-size: 10px;
+            color: #aaa;
+            font-family: monospace;
+            margin-top: 2px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -584,6 +775,7 @@
                     <button class="tab-btn" onclick="switchTab('rutas')">Rutas</button>
                     <button class="tab-btn" onclick="switchTab('historial')">Historial</button>
                     <button class="tab-btn" onclick="switchTab('mantenimiento')">Mantenimiento</button>
+                    <button class="tab-btn" onclick="switchTab('pagos')">💳 Pagos</button>
                 </div>
 
                 <!-- TAB: DASHBOARD -->
@@ -716,6 +908,101 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- TAB: PAGOS -->
+                <div class="tab-content" id="tab-pagos">
+
+                    <!-- Estadísticas rápidas -->
+                    <div class="pagos-stats">
+                        <div class="pago-stat-card">
+                            <div class="stat-value" id="pagosTotalCount">—</div>
+                            <div class="stat-label">Total pagos</div>
+                        </div>
+                        <div class="pago-stat-card">
+                            <div class="stat-value" id="pagosTotalMonto">—</div>
+                            <div class="stat-label">Monto total</div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario nuevo pago -->
+                    <div class="section">
+                        <div class="section-title">Registrar Pago</div>
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label>Viaje (Historial)</label>
+                                <select id="pagoHistorialId">
+                                    <option value="">Selecciona un viaje</option>
+                                </select>
+                            </div>
+                            <div class="coords-input-group">
+                                <div class="form-group">
+                                    <label>Monto</label>
+                                    <input type="number" id="pagoMonto" placeholder="0.00" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label>Moneda</label>
+                                    <select id="pagoMoneda">
+                                        <option value="MXN" selected>MXN</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Método de Pago</label>
+                                <select id="pagoMetodo">
+                                    <option value="">Selecciona método</option>
+                                    <option value="Efectivo">💵 Efectivo</option>
+                                    <option value="TarjetaDebito">💳 Tarjeta Débito</option>
+                                    <option value="TarjetaCredito">💳 Tarjeta Crédito</option>
+                                    <option value="Transferencia">🏦 Transferencia</option>
+                                    <option value="QR">📱 QR / App</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado</label>
+                                <select id="pagoEstado">
+                                    <option value="Pendiente">⏳ Pendiente</option>
+                                    <option value="Completado" selected>✅ Completado</option>
+                                    <option value="Cancelado">❌ Cancelado</option>
+                                    <option value="Reembolsado">↩️ Reembolsado</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Referencia <span style="font-weight:400;color:var(--gray);">(opcional)</span></label>
+                                <input type="text" id="pagoReferencia" placeholder="Ej: TXN-20260503-001" maxlength="100">
+                            </div>
+                            <button class="btn btn-primary" onclick="registrarPago()">💳 Registrar Pago</button>
+                            <div id="alertContainerPagos" style="margin-top:10px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de pagos -->
+                    <div class="section">
+                        <div class="section-title">Historial de Pagos</div>
+                        <div class="pagos-filter-row">
+                            <select id="filtroEstadoPago" onchange="filtrarPagos()">
+                                <option value="">Todos los estados</option>
+                                <option value="Completado">✅ Completado</option>
+                                <option value="Pendiente">⏳ Pendiente</option>
+                                <option value="Cancelado">❌ Cancelado</option>
+                                <option value="Reembolsado">↩️ Reembolsado</option>
+                            </select>
+                            <select id="filtroMetodoPago" onchange="filtrarPagos()">
+                                <option value="">Todos los métodos</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="TarjetaDebito">Débito</option>
+                                <option value="TarjetaCredito">Crédito</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="QR">QR / App</option>
+                            </select>
+                        </div>
+                        <div class="pagos-list" id="pagosList">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando pagos...</p>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -739,6 +1026,7 @@
         let rutas = [];
         let historiales = [];
         let vehiculosMantenimiento = [];
+        let pagos = [];
         let mapa = null;
         let marcadores = {};
         let polilineasDibujadas = [];
@@ -749,7 +1037,7 @@
             inicializarMapa();
             cargarDatos();
             iniciarSignalR();
-            
+
             // Recargar datos cada 30 segundos
             setInterval(cargarDatos, 30000);
         });
@@ -857,6 +1145,7 @@
                 limpiarYDibujarMapa();
                 actualizarMantenimiento();
                 await cargarHistorial();
+                await cargarPagos();
             } catch (error) {
                 console.error('Error cargando datos:', error);
             }
@@ -882,36 +1171,298 @@
             }
         }
 
+        // ========== PAGOS ==========
+        async function cargarPagos() {
+            try {
+                const res = await fetch(`${API_URL}/api/pagos`);
+                if (res.status === 404) {
+                    pagos = [];
+                    actualizarPagos(pagos);
+                    return;
+                }
+                if (!res.ok) throw new Error('Error al cargar pagos');
+                pagos = await res.json();
+                actualizarPagos(pagos);
+            } catch (error) {
+                console.error('Error cargando pagos:', error);
+                pagos = [];
+                actualizarPagos([]);
+            }
+        }
+
+        function metodoPagoIcon(metodo) {
+            const icons = {
+                'Efectivo': '💵',
+                'TarjetaDebito': '💳',
+                'TarjetaCredito': '💳',
+                'Transferencia': '🏦',
+                'QR': '📱'
+            };
+            return icons[metodo] || '💰';
+        }
+
+        function pagoEstadoClass(estado) {
+            const map = {
+                'Completado': 'completado',
+                'Pagado': 'pagado',
+                'Pendiente': 'pendiente',
+                'Cancelado': 'cancelado',
+                'Fallido': 'fallido',
+                'Reembolsado': 'reembolsado'
+            };
+            return map[estado] || 'pendiente';
+        }
+
+        function actualizarPagos(lista) {
+            // Tarjetas de stats
+            const completados = lista.filter(p => p.estado === 'Completado' || p.estado === 'Pagado');
+            const totalMonto = completados.reduce((sum, p) => sum + Number(p.monto), 0);
+            const moneda = lista.length > 0 ? lista[0].moneda : 'MXN';
+
+            const countEl = document.getElementById('pagosTotalCount');
+            const montoEl = document.getElementById('pagosTotalMonto');
+            if (countEl) countEl.textContent = lista.length;
+            if (montoEl) montoEl.textContent = `$${totalMonto.toFixed(2)}`;
+
+            if (lista.length === 0) {
+                document.getElementById('pagosList').innerHTML =
+                    '<p style="color: var(--gray); font-size: 12px;">No hay pagos registrados</p>';
+                return;
+            }
+
+            // Ordenar por fecha descendente
+            const ordenados = [...lista].sort((a, b) => new Date(b.fechaUtc) - new Date(a.fechaUtc));
+
+            const html = ordenados.map(p => {
+                const historial = historiales.find(h => h.id === p.historialViajeId);
+                const vehiculoLabel = historial
+                    ? (vehiculos.find(v => v.id === historial.vehiculoId)?.id ?? historial.vehiculoId)
+                    : p.historialViajeId;
+                const fecha = new Date(p.fechaUtc).toLocaleString('es-ES');
+                const estadoClass = pagoEstadoClass(p.estado);
+                const icono = metodoPagoIcon(p.metodo);
+                const colorBorder = estadoClass === 'completado' || estadoClass === 'pagado'
+                    ? 'var(--success)'
+                    : estadoClass === 'pendiente'
+                        ? 'var(--warning)'
+                        : estadoClass === 'cancelado' || estadoClass === 'fallido'
+                            ? 'var(--danger)'
+                            : 'var(--info)';
+
+                return `<div class="pago-card" style="border-left-color: ${colorBorder};">
+                    <div class="pago-card-header">
+                        <div>
+                            <span class="pago-monto">$${Number(p.monto).toFixed(2)}</span>
+                            <span class="pago-moneda">${p.moneda}</span>
+                        </div>
+                        <span class="pago-estado ${estadoClass}">${p.estado}</span>
+                    </div>
+                    <div class="pago-meta">
+                        <div>🚗 <strong>Vehículo:</strong> ${vehiculoLabel}</div>
+                        <div>📅 <strong>Fecha:</strong> ${fecha}</div>
+                        ${p.referencia ? `<div>🔖 <strong>Ref:</strong> ${p.referencia}</div>` : ''}
+                    </div>
+                    <div style="margin-top: 6px; display:flex; justify-content:space-between; align-items:center;">
+                        <span class="pago-metodo-badge">${icono} ${p.metodo}</span>
+                        ${p.estado === 'Pendiente' ? `<button class="btn btn-xs" style="background:#dc3545;color:white" onclick="cancelarPago('${p.id}')">Cancelar</button>` : ''}
+                    </div>
+                    ${p.id ? `<div class="pago-referencia">ID: ${p.id}</div>` : ''}
+                </div>`;
+            }).join('');
+
+            document.getElementById('pagosList').innerHTML = html;
+        }
+
+        function filtrarPagos() {
+            const filtroEstado = document.getElementById('filtroEstadoPago').value;
+            const filtroMetodo = document.getElementById('filtroMetodoPago').value;
+
+            let filtrados = pagos;
+            if (filtroEstado) filtrados = filtrados.filter(p => p.estado === filtroEstado);
+            if (filtroMetodo) filtrados = filtrados.filter(p => p.metodo === filtroMetodo);
+
+            actualizarPagos(filtrados);
+        }
+
+        async function registrarPago() {
+            const historialViajeId = document.getElementById('pagoHistorialId').value;
+            const montoRaw = document.getElementById('pagoMonto').value;
+            const moneda = document.getElementById('pagoMoneda').value;
+            const metodo = document.getElementById('pagoMetodo').value;
+            const estado = document.getElementById('pagoEstado').value;
+            const referencia = document.getElementById('pagoReferencia').value.trim() || null;
+
+            if (!historialViajeId) {
+                mostrarAlerta('Selecciona un viaje del historial', 'error', 'alertContainerPagos');
+                return;
+            }
+            const monto = parseFloat(montoRaw);
+            if (!montoRaw || isNaN(monto) || monto <= 0) {
+                mostrarAlerta('Ingresa un monto válido mayor a 0', 'error', 'alertContainerPagos');
+                return;
+            }
+            if (!metodo) {
+                mostrarAlerta('Selecciona un método de pago', 'error', 'alertContainerPagos');
+                return;
+            }
+
+            const id = 'pago-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+
+            const payload = { id, historialViajeId, monto, moneda, metodo, estado, referencia };
+
+            try {
+                const res = await fetch(`${API_URL}/api/pagos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    mostrarAlerta('✅ Pago registrado exitosamente', 'success', 'alertContainerPagos');
+                    document.getElementById('pagoHistorialId').value = '';
+                    document.getElementById('pagoMonto').value = '';
+                    document.getElementById('pagoMoneda').value = 'MXN';
+                    document.getElementById('pagoMetodo').value = '';
+                    document.getElementById('pagoEstado').value = 'Completado';
+                    document.getElementById('pagoReferencia').value = '';
+                    await cargarPagos();
+                } else {
+                    const text = await res.text();
+                    mostrarAlerta(`Error al registrar: ${res.status} - ${text}`, 'error', 'alertContainerPagos');
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta('Error de conexión', 'error', 'alertContainerPagos');
+            }
+        }
+
+        async function cancelarPago(pagoId) {
+            if (!confirm('¿Cancelar este pago?')) return;
+            try {
+                const res = await fetch(`${API_URL}/api/pagos/${pagoId}/cancelar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ estado: 'Cancelado' })
+                });
+                if (res.ok) {
+                    // Actualizar localmente
+                    const idx = pagos.findIndex(p => p.id === pagoId);
+                    if (idx >= 0) pagos[idx].estado = 'Cancelado';
+                    filtrarPagos();
+                } else {
+                    alert('No se pudo cancelar el pago');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión');
+            }
+        }
+
         // ========== ACTUALIZACIÓN DE UI ==========
         function actualizarDashboard() {
-            const gridHtml = vehiculos.map(v => `
-                <div class="vehicle-card" onclick="seleccionarVehiculo('${v.id}')">
+            const seccionTitle = document.querySelector('#tab-dashboard .section-title');
+            if (seccionTitle) seccionTitle.textContent = `Vehículos (${vehiculos.length})`;
+
+            if (vehiculos.length === 0) {
+                document.getElementById('vehiclesGrid').innerHTML = '<p style="color: var(--gray); font-size: 12px;">No hay vehículos registrados</p>';
+                document.getElementById('vehiclesInfo').innerHTML = 'No hay vehículos';
+                return;
+            }
+
+            const gridHtml = vehiculos.map(v => {
+                const estadoClass = v.estado.toLowerCase().replace(/\s+/g, '');
+                const fuelField = v.bateria !== undefined ? 'bateria' : 'combustible';
+                const fuelValue = v.bateria !== undefined ? v.bateria : v.combustible;
+                const fuelLabel = v.bateria !== undefined ? '🔋 Batería' : '⛽ Combustible';
+                const esDisponible = v.estado === 'Disponible';
+                const estaEnMantenimiento = v.estado === 'Mantenimiento';
+
+                return `
+                <div class="vehicle-card" id="vcard-${v.id}">
                     <div class="vehicle-card-header">
-                        <span class="vehicle-id">${v.id}</span>
-                        <span class="vehicle-status ${v.estado.toLowerCase()}">${v.estado}</span>
+                        <span class="vehicle-id">🚗 ${v.id}</span>
+                        <span class="vehicle-status ${estadoClass}">${v.estado}</span>
                     </div>
                     <div class="vehicle-info">
                         <div>📍 ${v.latitud.toFixed(4)}, ${v.longitud.toFixed(4)}</div>
                         <div>⏰ ${new Date(v.ultimaActualizacion).toLocaleTimeString('es-ES')}</div>
                     </div>
-                    <div style="font-weight: 600; margin-bottom: 6px;">Combustible: ${v.combustible}%</div>
+                    <div style="font-weight: 600; margin-bottom: 4px; font-size: 12px;">${fuelLabel}: <span id="fuelVal-${v.id}">${fuelValue}</span>%</div>
                     <div class="fuel-bar">
-                        <div class="fuel-bar-fill ${getFuelClass(v.combustible)}" style="width: ${v.combustible}%"></div>
+                        <div class="fuel-bar-fill ${getFuelClass(fuelValue)}" id="fuelBar-${v.id}" style="width: ${fuelValue}%"></div>
                     </div>
-                </div>
-            `).join('');
+                    <div class="vehicle-controls">
+                        <div class="fuel-slider-row">
+                            <span>${fuelLabel}</span>
+                            <input type="range" min="0" max="100" value="${fuelValue}"
+                                id="slider-${v.id}"
+                                oninput="previewFuel('${v.id}', this.value)"
+                                onchange="actualizarCombustible('${v.id}', this.value)">
+                            <span class="fuel-value-badge" id="sliderVal-${v.id}">${fuelValue}%</span>
+                        </div>
+                        <div class="vehicle-actions">
+                            ${!esDisponible ? `<button class="btn btn-success btn-xs" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')">✅ Disponible</button>` : ''}
+                            ${esDisponible ? `<button class="btn btn-xs" style="background:#ffc107;color:#333" onclick="cambiarEstadoVehiculo('${v.id}', 'NoDisponible')">🔒 No Disponible</button>` : ''}
+                            ${!estaEnMantenimiento ? `<button class="btn btn-xs" style="background:#dc3545;color:white" onclick="cambiarEstadoVehiculo('${v.id}', 'Mantenimiento')">🔧 Mantenimiento</button>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
 
-            document.getElementById('vehiclesGrid').innerHTML = gridHtml || '<p style="color: var(--gray); font-size: 12px;">No hay vehículos disponibles</p>';
+            document.getElementById('vehiclesGrid').innerHTML = gridHtml;
 
             // Actualizar panel info
-            const infoHtml = vehiculos.map(v => `
-                <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
+            const infoHtml = vehiculos.map(v => {
+                const fuelValue = v.bateria !== undefined ? v.bateria : v.combustible;
+                return `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
                     <strong>${v.id}</strong> - ${v.estado}<br>
-                    <small>Combustible: ${v.combustible}% | Bat: ${v.combustible}%</small>
-                </div>
-            `).join('');
+                    <small>⛽ ${fuelValue}%</small>
+                </div>`;
+            }).join('');
 
             document.getElementById('vehiclesInfo').innerHTML = infoHtml || 'No hay vehículos';
+        }
+
+        function previewFuel(vehiculoId, value) {
+            const valEl = document.getElementById(`sliderVal-${vehiculoId}`);
+            const fuelBarEl = document.getElementById(`fuelBar-${vehiculoId}`);
+            const fuelValEl = document.getElementById(`fuelVal-${vehiculoId}`);
+            if (valEl) valEl.textContent = value + '%';
+            if (fuelValEl) fuelValEl.textContent = value;
+            if (fuelBarEl) {
+                fuelBarEl.style.width = value + '%';
+                fuelBarEl.className = `fuel-bar-fill ${getFuelClass(Number(value))}`;
+            }
+        }
+
+        async function actualizarCombustible(vehiculoId, nuevoValor) {
+            try {
+                // Intentar con campo 'combustible' primero, luego 'bateria'
+                const res = await fetch(`${API_URL}/api/vehiculos/${vehiculoId}/combustible`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ combustible: Number(nuevoValor) })
+                });
+                if (!res.ok) {
+                    // Intentar endpoint alternativo
+                    const res2 = await fetch(`${API_URL}/api/vehiculos/${vehiculoId}/bateria`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bateria: Number(nuevoValor) })
+                    });
+                    if (!res2.ok) {
+                        console.warn('No se pudo actualizar combustible/batería:', res.status);
+                    }
+                }
+                // Actualizar localmente
+                const idx = vehiculos.findIndex(v => v.id === vehiculoId);
+                if (idx >= 0) {
+                    if (vehiculos[idx].bateria !== undefined) vehiculos[idx].bateria = Number(nuevoValor);
+                    else vehiculos[idx].combustible = Number(nuevoValor);
+                }
+            } catch (error) {
+                console.error('Error actualizando combustible:', error);
+            }
         }
 
         function actualizarSelects() {
@@ -965,6 +1516,17 @@
             `).join('');
 
             document.getElementById('routesList').innerHTML = routesHtml || '<p style="color: var(--gray);">No hay rutas</p>';
+
+            // Historial para selector de pagos
+            const historialPagosHtml = historiales.map(h => {
+                const vehiculoLabel = vehiculos.find(v => v.id === h.vehiculoId)?.id ?? h.vehiculoId;
+                const fecha = new Date(h.inicioUtc).toLocaleDateString('es-ES');
+                return `<option value="${h.id}">${vehiculoLabel} — ${h.estado} — ${fecha}</option>`;
+            }).join('');
+            const pagoHistSel = document.getElementById('pagoHistorialId');
+            if (pagoHistSel) {
+                pagoHistSel.innerHTML = '<option value="">Selecciona un viaje</option>' + historialPagosHtml;
+            }
         }
 
         function actualizarHistorial() {
@@ -980,13 +1542,23 @@
         }
 
         function actualizarMantenimiento() {
-            const maintenanceHtml = vehiculosMantenimiento.map(v => `
-                <div class="route-item">
-                    <div class="route-item-header">${v.id}</div>
-                    <div class="route-item-meta">Estado: ${v.estado} | Combustible: ${v.combustible}%</div>
-                    <button class="btn btn-small" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')">Marcar Disponible</button>
-                </div>
-            `).join('');
+            // Combinar vehiculosMantenimiento + los que tienen estado Mantenimiento del listado general
+            const idsMantenimiento = new Set(vehiculosMantenimiento.map(v => v.id));
+            const enMantenimiento = [
+                ...vehiculosMantenimiento,
+                ...vehiculos.filter(v => v.estado === 'Mantenimiento' && !idsMantenimiento.has(v.id))
+            ];
+
+            const maintenanceHtml = enMantenimiento.map(v => {
+                const fuelValue = v.bateria !== undefined ? v.bateria : v.combustible;
+                return `<div class="route-item">
+                    <div class="route-item-header">🚗 ${v.id}</div>
+                    <div class="route-item-meta">Estado: ${v.estado} | ⛽ ${fuelValue}%</div>
+                    <div style="margin-top:6px; display:flex; gap:6px;">
+                        <button class="btn btn-small btn-success" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')">✅ Marcar Disponible</button>
+                    </div>
+                </div>`;
+            }).join('');
 
             document.getElementById('maintenanceList').innerHTML = maintenanceHtml || '<p style="color: var(--gray);">No hay vehículos en mantenimiento</p>';
         }
@@ -1044,13 +1616,19 @@
                 });
 
                 if (res.ok) {
-                    cargarDatos();
+                    // Actualizar localmente sin recargar todo
+                    const idx = vehiculos.findIndex(v => v.id === idVehiculo);
+                    if (idx >= 0) vehiculos[idx].estado = nuevoEstado;
+                    actualizarDashboard();
+                    actualizarMantenimiento();
+                    actualizarSelects();
                 } else {
-                    alert('Error al actualizar el estado del vehículo');
+                    const text = await res.text();
+                    alert(`Error al actualizar estado: ${res.status} - ${text}`);
                 }
             } catch (error) {
                 console.error(error);
-                alert('Error de conexión');
+                alert('Error de conexión al cambiar estado');
             }
         }
 
