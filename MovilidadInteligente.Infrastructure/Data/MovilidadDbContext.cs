@@ -18,6 +18,7 @@ namespace MovilidadInteligente.Infrastructure.Data
         public DbSet<Ubicacion> Ubicaciones { get; set; }
         public DbSet<RutaPredeterminada> RutasPredeterminadas { get; set; }
         public DbSet<Coordenada> Coordenadas { get; set; }
+        public DbSet<HistorialViaje> HistorialViajes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -80,6 +81,33 @@ namespace MovilidadInteligente.Infrastructure.Data
                 entity.Property(e => e.Latitud).IsRequired();
                 entity.Property(e => e.Longitud).IsRequired();
                 entity.Property(e => e.Orden).HasDefaultValue(0);
+            });
+
+            modelBuilder.Entity<HistorialViaje>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.VehiculoId).IsRequired();
+                entity.Property(e => e.OrigenLocationId).IsRequired();
+                entity.Property(e => e.DestinoLocationId).IsRequired();
+                entity.Property(e => e.Estado).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.InicioUtc).IsRequired().HasDefaultValue(DateTime.UtcNow);
+                entity.Property(e => e.DistanciaKm).HasColumnType("decimal(10,2)");
+                entity.Property(e => e.CostoEstimado).HasColumnType("decimal(18,2)");
+
+                entity.HasOne(e => e.Vehiculo)
+                    .WithMany()
+                    .HasForeignKey(e => e.VehiculoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.OrigenLocation)
+                    .WithMany()
+                    .HasForeignKey(e => e.OrigenLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.DestinoLocation)
+                    .WithMany()
+                    .HasForeignKey(e => e.DestinoLocationId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
 

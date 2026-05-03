@@ -15,14 +15,17 @@ namespace MovilidadInteligente.Application.Services
     {
         private readonly IVehiculoRepository _vehiculoRepository;
         private readonly INotificadorHub _notificadorHub;
+        private readonly IHistorialViajeRepository _historialViajeRepository;
 
         public ProcesarTelemetriaService(
             IVehiculoRepository vehiculoRepository,
-            INotificadorHub notificadorHub
+            INotificadorHub notificadorHub,
+            IHistorialViajeRepository historialViajeRepository
             )
         {
             _vehiculoRepository = vehiculoRepository;
             _notificadorHub = notificadorHub;
+            _historialViajeRepository = historialViajeRepository;
         }
 
         public async Task EjecutarAsync(Vehiculo vehiculo)
@@ -34,6 +37,7 @@ namespace MovilidadInteligente.Application.Services
                 return;
             }
 
+            var estadoAnterior = vehiculoExistente.Estado;
             vehiculoExistente.Latitud = vehiculo.Latitud;
             vehiculoExistente.Longitud = vehiculo.Longitud;
             vehiculoExistente.Combustible = vehiculo.Combustible;
@@ -54,6 +58,20 @@ namespace MovilidadInteligente.Application.Services
             var dto = VehiculoMapper.ToDTO(vehiculoExistente);
 
             await _notificadorHub.EnviarActualizacionVehiculoAsync(dto);
+
+            if (string.Equals(estadoAnterior, "Ocupado", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(vehiculoExistente.Estado, "Ocupado", StringComparison.OrdinalIgnoreCase))
+            {
+                var historialActivo = await _historialViajeRepository.GetActivoPorVehiculoAsync(vehiculoExistente.Id);
+                if (historialActivo != null)
+                {
+                    historialActivo.Estado = "Finalizado";
+                    historialActivo.FinUtc = DateTime.UtcNow;
+                    await _historialViajeRepository.UpdateAsync(historialActivo);
+                }
+
+                await _notificadorHub.EnviarViajeFinalizadoAsync(vehiculoExistente.Id);
+            }
         }
     }
 }

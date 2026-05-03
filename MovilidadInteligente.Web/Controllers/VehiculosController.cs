@@ -62,6 +62,17 @@ namespace MovilidadInteligente.Web.Controllers
             return Ok(vehiculos);
         }
 
+        [HttpGet("Mantenimiento")]
+        public async Task<ActionResult<IEnumerable<VehiculoDTO>>> GetMantenimiento()
+        {
+            var vehiculos = await _vehiculoService.ObtenerVehiculosMantenimientoAsync();
+            if (vehiculos == null || !vehiculos.Any())
+            {
+                return NotFound();
+            }
+            return Ok(vehiculos);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] VehiculoDTO vehiculoDto)
         {

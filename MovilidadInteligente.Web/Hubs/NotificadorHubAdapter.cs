@@ -2,6 +2,7 @@
 using MovilidadInteligente.Application.Interfaces.Services;
 using MovilidadInteligente.Application.Models;
 using MovilidadInteligente.Domain.Entities;
+using System;
 
 namespace MovilidadInteligente.Web.Hubs
 {
@@ -19,6 +20,15 @@ namespace MovilidadInteligente.Web.Hubs
         {
             // disparo el evento 'ActualizarVehiculo' a todos los navegadores conectados
             await _hubContext.Clients.All.SendAsync("ActualizarVehiculo", dto);
+        }
+
+        public async Task EnviarViajeFinalizadoAsync(string vehiculoId)
+        {
+            await _hubContext.Clients.All.SendAsync("ViajeFinalizado", new
+            {
+                VehiculoId = vehiculoId,
+                Fecha = DateTime.UtcNow
+            });
         }
     }
 }

@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movilidad Inteligente - Dashboard</title>
+    
+    <!-- Font Awesome para iconos (deje la version mas nueva) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Leaflet para mapas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- SignalR para actualizaciones en tiempo real -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    
+    <!-- Leaflet Awesome Markers para iconos en el mapa (una sola version para evitar choques) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.js"></script>
+
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR - Panel de Control */
+        .sidebar {
+            width: 420px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            width: fit-content;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.disconnected {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 10px 15px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* FORMULARIOS */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,102,204,0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 11px;
+            width: auto;
+        }
+
+        /* DASHBOARD - Mapa + Info */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #mapa {
+            flex: 1;
+            width: 100%;
+        }
+
+        .vehicles-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 15px;
+            max-width: 300px;
+            z-index: 999;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* FALLBACK ICONS SI AwesomeMarkers NO CARGA */
+        .custom-marker {
+            background: transparent;
+            border: none;
+        }
+
+        .marker-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            border: 2px solid #fff;
+            font-size: 13px;
+        }
+
+        .marker-badge.vehicle {
+            background: #198754;
+        }
+
+        .marker-badge.location {
+            background: #0d6efd;
+        }
+
+        /* VEHICLE GRID */
+        .vehicle-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .vehicle-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .vehicle-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .vehicle-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .vehicle-id {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .vehicle-status {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .vehicle-status.disponible {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .vehicle-status.ocupado {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .vehicle-status.mantenimiento {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .vehicle-info {
+            font-size: 12px;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .fuel-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .fuel-bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .fuel-bar-fill.critical {
+            background: var(--danger);
+        }
+
+        .fuel-bar-fill.warning {
+            background: var(--warning);
+        }
+
+        .fuel-bar-fill.good {
+            background: var(--success);
+        }
+
+        /* LOCATION/ROUTE FORMS */
+        .form-section {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .coords-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .coords-input-group input {
+            width: 100%;
+        }
+
+        .routes-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .route-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid var(--primary);
+            font-size: 12px;
+        }
+
+        .route-item-header {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .route-item-meta {
+            color: var(--gray);
+            font-size: 11px;
+        }
+
+        /* LOCATION LIST */
+        .locations-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .location-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-item-info {
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .location-item-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 2px;
+        }
+
+        .location-item-coords {
+            color: var(--gray);
+            font-size: 11px;
+        }
+
+        .location-item-btn {
+            padding: 4px 8px;
+            margin-left: 8px;
+            font-size: 10px;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        #alertContainerViajes {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            width: min(420px, 90%);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* SCROLLBAR STYLING */
+        .sidebar::-webkit-scrollbar,
+        .routes-list::-webkit-scrollbar,
+        .locations-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        .routes-list::-webkit-scrollbar-track,
+        .locations-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .routes-list::-webkit-scrollbar-thumb,
+        .locations-list::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .routes-list::-webkit-scrollbar-thumb:hover,
+        .locations-list::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .main-content {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="alertContainerViajes"></div>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🚗 Movilidad</h1>
+                <div class="connection-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Conectando...</span>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- TABS -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+                    <button class="tab-btn" onclick="switchTab('ubicaciones')">Ubicaciones</button>
+                    <button class="tab-btn" onclick="switchTab('rutas')">Rutas</button>
+                    <button class="tab-btn" onclick="switchTab('historial')">Historial</button>
+                    <button class="tab-btn" onclick="switchTab('mantenimiento')">Mantenimiento</button>
+                </div>
+
+                <!-- TAB: DASHBOARD -->
+                <div class="tab-content active" id="tab-dashboard">
+                    <div class="section">
+                        <div class="section-title">Vehículos Disponibles</div>
+                        <div class="vehicle-grid" id="vehiclesGrid">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando vehículos...</p>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Solicitar Viaje</div>
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label>Origen</label>
+                                <select id="origenSelect">
+                                    <option value="">Selecciona origen</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Destino</label>
+                                <select id="destinoSelect">
+                                    <option value="">Selecciona destino</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Vehículo</label>
+                                <select id="vehiculoSelect">
+                                    <option value="">Selecciona vehículo</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="solicitarViaje()">Solicitar Viaje</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TAB: UBICACIONES -->
+                <div class="tab-content" id="tab-ubicaciones">
+                    <div class="section">
+                        <div class="section-title">Agregar Nueva Ubicación</div>
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" id="ubicacionNombre" placeholder="Ej: Centro Comercial">
+                            </div>
+                            <div class="coords-input-group">
+                                <div class="form-group">
+                                    <label>Latitud</label>
+                                    <input type="number" id="ubicacionLat" placeholder="27.070" step="0.0001">
+                                </div>
+                                <div class="form-group">
+                                    <label>Longitud</label>
+                                    <input type="number" id="ubicacionLon" placeholder="-109.440" step="0.0001">
+                                </div>
+                            </div>
+                            <button class="btn btn-success" onclick="crearUbicacion()">Crear Ubicación</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Ubicaciones Existentes</div>
+                        <div class="locations-list" id="locationsList">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando ubicaciones...</p>
+                        </div>
+                    </div>
+
+                    <div id="alertContainer"></div>
+                </div>
+
+                <!-- TAB: RUTAS -->
+                <div class="tab-content" id="tab-rutas">
+                    <div class="section">
+                        <div class="section-title">Agregar Nueva Ruta</div>
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label>Nombre de Ruta</label>
+                                <input type="text" id="rutaNombre" placeholder="Ej: Centro a ITSON">
+                            </div>
+                            <div class="form-group">
+                                <label>Origen</label>
+                                <select id="rutaOrigen">
+                                    <option value="">Selecciona origen</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Destino</label>
+                                <select id="rutaDestino">
+                                    <option value="">Selecciona destino</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Coordenadas de la ruta</label>
+                                <textarea id="rutaCoordenadas" placeholder="27.0701,-109.4402\n27.0710,-109.4388\n27.0724,-109.4365"></textarea>
+                                <small style="color: var(--gray); display: block; margin-top: 6px; line-height: 1.4;">
+                                    Una coordenada por línea en formato latitud,longitud. La ruta se guardará con el orden de las líneas.
+                                </small>
+                            </div>
+                            <button class="btn btn-success" onclick="crearRuta()">Crear Ruta</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Rutas Disponibles</div>
+                        <div class="routes-list" id="routesList">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando rutas...</p>
+                        </div>
+                    </div>
+
+                    <div id="alertContainerRutas"></div>
+                </div>
+
+                <!-- TAB: HISTORIAL -->
+                <div class="tab-content" id="tab-historial">
+                    <div class="section">
+                        <div class="section-title">Historial de Viajes</div>
+                        <div class="routes-list" id="historialList">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando historial...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: MANTENIMIENTO -->
+                <div class="tab-content" id="tab-mantenimiento">
+                    <div class="section">
+                        <div class="section-title">Vehículos en Mantenimiento</div>
+                        <div class="routes-list" id="maintenanceList">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando mantenimiento...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div id="mapa"></div>
+            <div class="vehicles-panel">
+                <h3 style="margin-bottom: 10px; color: var(--primary);">Info de Vehículos</h3>
+                <div id="vehiclesInfo" style="font-size: 12px; color: var(--gray);">
+                    Cargando información...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== CONFIGURACIÓN ==========
+        const API_URL = 'http://localhost:5150';
+        let vehiculos = [];
+        let ubicaciones = [];
+        let rutas = [];
+        let historiales = [];
+        let vehiculosMantenimiento = [];
+        let mapa = null;
+        let marcadores = {};
+        let polilineasDibujadas = [];
+        let conexionSignalR = null;
+
+        // ========== INICIALIZACIÓN ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarMapa();
+            cargarDatos();
+            iniciarSignalR();
+            
+            // Recargar datos cada 30 segundos
+            setInterval(cargarDatos, 30000);
+        });
+
+        // ========== FUNCIONES DE MAPA ==========
+        function inicializarMapa() {
+            mapa = L.map('mapa').setView([27.070, -109.440], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mapa);
+        }
+
+        function crearIconoSeguro(config) {
+            const { icon, markerColor, iconColor, tipo } = config;
+
+            // Usa AwesomeMarkers cuando la libreria este disponible.
+            if (L.AwesomeMarkers && typeof L.AwesomeMarkers.icon === 'function') {
+                return L.AwesomeMarkers.icon({
+                    icon,
+                    prefix: 'fa',
+                    markerColor,
+                    iconColor: iconColor || 'white'
+                });
+            }
+
+            // Fallback: crea un icono visual distinto para ubicaciones y vehiculos.
+            const badgeClass = tipo === 'vehicle' ? 'vehicle' : 'location';
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="marker-badge ${badgeClass}"><i class="fa-solid fa-${icon}"></i></div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -28]
+            });
+        }
+
+        function dibujarUbicaciones() {
+            ubicaciones.forEach(ub => {
+                const iconoUbicacion = crearIconoSeguro({
+                    icon: 'map-location-dot',
+                    markerColor: 'blue',
+                    iconColor: 'white',
+                    tipo: 'location'
+                });
+
+                const markerOptions = iconoUbicacion ? { icon: iconoUbicacion } : {};
+
+                const marker = L.marker([ub.latitud, ub.longitud], markerOptions)
+                    .addTo(mapa)
+                    .bindPopup(`<b>📍 ${ub.nombre}</b><br>Lat: ${ub.latitud.toFixed(4)}<br>Lon: ${ub.longitud.toFixed(4)}`);
+            });
+        }
+
+        function actualizarMarcadorVehiculo(vehiculo) {
+            if (marcadores[vehiculo.id]) {
+                marcadores[vehiculo.id].setLatLng([vehiculo.latitud, vehiculo.longitud]);
+            } else {
+                const markerColor = vehiculo.estado === 'Disponible' ? 'green' : (vehiculo.estado === 'Ocupado' ? 'orange' : 'red');
+                const iconColor = vehiculo.combustible < 25 ? '#ff4444' : 'white';
+                const iconoVehiculo = crearIconoSeguro({
+                    icon: 'car',
+                    markerColor,
+                    iconColor,
+                    tipo: 'vehicle'
+                });
+                const markerOptions = iconoVehiculo ? { icon: iconoVehiculo } : {};
+                
+                const marker = L.marker([vehiculo.latitud, vehiculo.longitud], markerOptions).addTo(mapa);
+                
+                marker.bindPopup(`
+                    <b>🚗 ${vehiculo.id}</b><br>
+                    Estado: ${vehiculo.estado}<br>
+                    Combustible: ${vehiculo.combustible}%<br>
+                    Lat: ${vehiculo.latitud.toFixed(4)}<br>
+                    Lon: ${vehiculo.longitud.toFixed(4)}
+                `);
+                
+                marcadores[vehiculo.id] = marker;
+            }
+        }
+
+        // ========== CARGA DE DATOS ==========
+        async function cargarDatos() {
+            try {
+                const [vehiculosRes, ubicacionesRes, rutasRes, mantenimientoRes] = await Promise.all([
+                    fetch(`${API_URL}/api/vehiculos`),
+                    fetch(`${API_URL}/api/ubicaciones`),
+                    fetch(`${API_URL}/api/rutas`),
+                    fetch(`${API_URL}/api/vehiculos/mantenimiento`)
+                ]);
+
+                if (!vehiculosRes.ok || !ubicacionesRes.ok || !rutasRes.ok || (!mantenimientoRes.ok && mantenimientoRes.status !== 404)) {
+                    throw new Error('Error al cargar datos');
+                }
+
+                vehiculos = await vehiculosRes.json();
+                ubicaciones = await ubicacionesRes.json();
+                rutas = await rutasRes.json();
+                vehiculosMantenimiento = mantenimientoRes.status === 404 ? [] : await mantenimientoRes.json();
+
+                // Actualizar UI
+                actualizarDashboard();
+                actualizarSelects();
+                limpiarYDibujarMapa();
+                actualizarMantenimiento();
+                await cargarHistorial();
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+            }
+        }
+
+        async function cargarHistorial() {
+            try {
+                const res = await fetch(`${API_URL}/api/historial`);
+                if (res.status === 404) {
+                    historiales = [];
+                    actualizarHistorial();
+                    return;
+                }
+
+                if (!res.ok) {
+                    throw new Error('Error al cargar historial');
+                }
+
+                historiales = await res.json();
+                actualizarHistorial();
+            } catch (error) {
+                console.error('Error cargando historial:', error);
+            }
+        }
+
+        // ========== ACTUALIZACIÓN DE UI ==========
+        function actualizarDashboard() {
+            const gridHtml = vehiculos.map(v => `
+                <div class="vehicle-card" onclick="seleccionarVehiculo('${v.id}')">
+                    <div class="vehicle-card-header">
+                        <span class="vehicle-id">${v.id}</span>
+                        <span class="vehicle-status ${v.estado.toLowerCase()}">${v.estado}</span>
+                    </div>
+                    <div class="vehicle-info">
+                        <div>📍 ${v.latitud.toFixed(4)}, ${v.longitud.toFixed(4)}</div>
+                        <div>⏰ ${new Date(v.ultimaActualizacion).toLocaleTimeString('es-ES')}</div>
+                    </div>
+                    <div style="font-weight: 600; margin-bottom: 6px;">Combustible: ${v.combustible}%</div>
+                    <div class="fuel-bar">
+                        <div class="fuel-bar-fill ${getFuelClass(v.combustible)}" style="width: ${v.combustible}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('vehiclesGrid').innerHTML = gridHtml || '<p style="color: var(--gray); font-size: 12px;">No hay vehículos disponibles</p>';
+
+            // Actualizar panel info
+            const infoHtml = vehiculos.map(v => `
+                <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
+                    <strong>${v.id}</strong> - ${v.estado}<br>
+                    <small>Combustible: ${v.combustible}% | Bat: ${v.combustible}%</small>
+                </div>
+            `).join('');
+
+            document.getElementById('vehiclesInfo').innerHTML = infoHtml || 'No hay vehículos';
+        }
+
+        function actualizarSelects() {
+            // Origen y Destino
+            const ubicacionesHtml = ubicaciones.map(u => 
+                `<option value="${u.id}">${u.nombre}</option>`
+            ).join('');
+
+            document.getElementById('origenSelect').innerHTML = '<option value="">Selecciona origen</option>' + ubicacionesHtml;
+            document.getElementById('destinoSelect').innerHTML = '<option value="">Selecciona destino</option>';
+            document.getElementById('rutaOrigen').innerHTML = '<option value="">Selecciona origen</option>' + ubicacionesHtml;
+            document.getElementById('rutaDestino').innerHTML = '<option value="">Selecciona destino</option>' + ubicacionesHtml;
+
+            const origenSelect = document.getElementById('origenSelect');
+            const rutaOrigenSelect = document.getElementById('rutaOrigen');
+            origenSelect.onchange = filtrarDestinos;
+            rutaOrigenSelect.onchange = function () {
+                document.getElementById('rutaDestino').innerHTML = '<option value="">Selecciona destino</option>' + ubicacionesHtml;
+            };
+
+            // Vehículos disponibles
+            const vehiculosDisponibles = vehiculos.filter(v => v.estado === 'Disponible');
+            const vehiculosHtml = vehiculosDisponibles.map(v => 
+                `<option value="${v.id}">${v.id} (Combustible: ${v.combustible}%)</option>`
+            ).join('');
+
+            document.getElementById('vehiculoSelect').innerHTML = '<option value="">Selecciona vehículo</option>' + vehiculosHtml;
+
+            // Ubicaciones
+            const locationsHtml = ubicaciones.map(u => `
+                <div class="location-item">
+                    <div class="location-item-info">
+                        <div class="location-item-name">${u.nombre}</div>
+                        <div class="location-item-coords">Lat: ${u.latitud.toFixed(4)}, Lon: ${u.longitud.toFixed(4)}</div>
+                    </div>
+                    <button class="btn btn-small" onclick="eliminarUbicacion('${u.id}')">Eliminar</button>
+                </div>
+            `).join('');
+
+            document.getElementById('locationsList').innerHTML = locationsHtml || '<p style="color: var(--gray);">No hay ubicaciones</p>';
+
+            // Rutas
+            const routesHtml = rutas.map(r => `
+                <div class="route-item">
+                    <div class="route-item-header">${r.nombre || 'Ruta Sin Nombre'}</div>
+                    <div class="route-item-meta">
+                        ${ubicaciones.find(u => u.id === r.origenlocationId)?.nombre || 'Origen'} → 
+                        ${ubicaciones.find(u => u.id === r.destinoLocationId)?.nombre || 'Destino'}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('routesList').innerHTML = routesHtml || '<p style="color: var(--gray);">No hay rutas</p>';
+        }
+
+        function actualizarHistorial() {
+            const historialHtml = historiales.map(h => `
+                <div class="route-item">
+                    <div class="route-item-header">${vehiculos.find(v => v.id === h.vehiculoId)?.id ?? h.vehiculoId}</div>
+                    <div class="route-item-meta">Vehículo: ${vehiculos.find(v => v.id === h.vehiculoId)?.id ?? h.vehiculoId} | Estado: ${h.estado}</div>
+                    <div class="route-item-meta">Inicio: ${new Date(h.inicioUtc).toLocaleString('es-ES')}${h.finUtc ? ` | Fin: ${new Date(h.finUtc).toLocaleString('es-ES')}` : ''}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('historialList').innerHTML = historialHtml || '<p style="color: var(--gray);">No hay historial</p>';
+        }
+
+        function actualizarMantenimiento() {
+            const maintenanceHtml = vehiculosMantenimiento.map(v => `
+                <div class="route-item">
+                    <div class="route-item-header">${v.id}</div>
+                    <div class="route-item-meta">Estado: ${v.estado} | Combustible: ${v.combustible}%</div>
+                    <button class="btn btn-small" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')">Marcar Disponible</button>
+                </div>
+            `).join('');
+
+            document.getElementById('maintenanceList').innerHTML = maintenanceHtml || '<p style="color: var(--gray);">No hay vehículos en mantenimiento</p>';
+        }
+
+        function limpiarYDibujarMapa() {
+            // Limpiar marcadores
+            Object.values(marcadores).forEach(m => mapa.removeLayer(m));
+            marcadores = {};
+
+            // Dibujar ubicaciones y vehículos
+            dibujarUbicaciones();
+            vehiculos.forEach(actualizarMarcadorVehiculo);
+        }
+
+        // ========== FUNCIONES DE UBICACIÓN ==========
+        async function crearUbicacion() {
+            const nombre = document.getElementById('ubicacionNombre').value;
+            const latitud = parseFloat(document.getElementById('ubicacionLat').value);
+            const longitud = parseFloat(document.getElementById('ubicacionLon').value);
+            const id = nombre.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+
+            if (!nombre || !latitud || !longitud) {
+                mostrarAlerta('Por favor completa todos los campos', 'error', 'alertContainer');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/ubicaciones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, latitud, longitud, id })
+                });
+
+                if (res.ok) {
+                    mostrarAlerta('Ubicación creada exitosamente', 'success', 'alertContainer');
+                    document.getElementById('ubicacionNombre').value = '';
+                    document.getElementById('ubicacionLat').value = '';
+                    document.getElementById('ubicacionLon').value = '';
+                    cargarDatos();
+                } else {
+                    mostrarAlerta('Error al crear ubicación', 'error', 'alertContainer');
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta('Error de conexión', 'error', 'alertContainer');
+            }
+        }
+
+        async function cambiarEstadoVehiculo(idVehiculo, nuevoEstado) {
+            try {
+                const res = await fetch(`${API_URL}/api/vehiculos/cambiarestado`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idVehiculo, nuevoEstado })
+                });
+
+                if (res.ok) {
+                    cargarDatos();
+                } else {
+                    alert('Error al actualizar el estado del vehículo');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión');
+            }
+        }
+
+        async function eliminarUbicacion(id) {
+            if (!confirm('¿Eliminar esta ubicación?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/ubicaciones/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    mostrarAlerta('Ubicación eliminada', 'success', 'alertContainer');
+                    cargarDatos();
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta('Error al eliminar', 'error', 'alertContainer');
+            }
+        }
+
+        // ========== FUNCIONES DE RUTA ==========
+        async function crearRuta() {
+            const nombre = document.getElementById('rutaNombre').value;
+            const origenlocationId = document.getElementById('rutaOrigen').value;
+            const destinoLocationId = document.getElementById('rutaDestino').value;
+            const coordenadasTexto = document.getElementById('rutaCoordenadas').value;
+            const id = nombre.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+
+            if (!nombre || !origenlocationId || !destinoLocationId) {
+                mostrarAlerta('Por favor completa todos los campos', 'error', 'alertContainerRutas');
+                return;
+            }
+
+            let coordenadas;
+            try {
+                coordenadas = coordenadasTexto
+                    .split('\n')
+                    .map(linea => linea.trim())
+                    .filter(Boolean)
+                    .map((linea, index) => {
+                        const [latitudRaw, longitudRaw] = linea.split(',').map(parte => parte.trim());
+                        const latitud = Number(latitudRaw);
+                        const longitud = Number(longitudRaw);
+
+                        if (Number.isNaN(latitud) || Number.isNaN(longitud)) {
+                            throw new Error(`Coordenada inválida en la línea ${index + 1}. Usa el formato latitud,longitud.`);
+                        }
+
+                        return {
+                            latitud,
+                            longitud,
+                            orden: index + 1
+                        };
+                    });
+            } catch (error) {
+                mostrarAlerta(error.message, 'error', 'alertContainerRutas');
+                return;
+            }
+
+            if (coordenadas.length === 0) {
+                mostrarAlerta('Debes agregar al menos una coordenada para la ruta', 'error', 'alertContainerRutas');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/rutas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id,
+                        nombre,
+                        origenlocationId,
+                        destinoLocationId,
+                        id: `${nombre.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+                        coordenadas
+                    })
+                });
+
+                if (res.ok) {
+                    mostrarAlerta('Ruta creada exitosamente', 'success', 'alertContainerRutas');
+                    document.getElementById('rutaNombre').value = '';
+                    document.getElementById('rutaOrigen').value = '';
+                    document.getElementById('rutaDestino').value = '';
+                    document.getElementById('rutaCoordenadas').value = '';
+                    cargarDatos();
+                } else {
+                    mostrarAlerta('Error al crear ruta', 'error', 'alertContainerRutas');
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta(error.message || 'Error de conexión', 'error', 'alertContainerRutas');
+            }
+        }
+
+        // ========== SOLICITUD DE VIAJE ==========
+        async function solicitarViaje() {
+            const origen = document.getElementById('origenSelect').value;
+            const destino = document.getElementById('destinoSelect').value;
+            const vehiculoId = document.getElementById('vehiculoSelect').value;
+
+            if (!origen || !destino || !vehiculoId) {
+                alert('Por favor selecciona origen, destino y vehículo');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/viajes/iniciar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        vehiculoId,
+                        origen: origen,
+                        destino: destino,
+                        estado: 'Pendiente'
+                    })
+                });
+
+                if (res.ok) {
+                    alert('¡Viaje solicitado exitosamente!');
+                    document.getElementById('origenSelect').value = '';
+                    document.getElementById('destinoSelect').value = '';
+                    document.getElementById('vehiculoSelect').value = '';
+                } else {
+                    alert('Error al solicitar viaje');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión');
+            }
+        }
+
+        // ========== UTILIDADES ==========
+        function getFuelClass(fuel) {
+            if (fuel < 25) return 'critical';
+            if (fuel < 50) return 'warning';
+            return 'good';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function seleccionarVehiculo(vehiculoId) {
+            document.getElementById('vehiculoSelect').value = vehiculoId;
+            switchTab('dashboard');
+        }
+
+        function filtrarDestinos() {
+            const origenId = document.getElementById('origenSelect').value;
+            const destinoSelect = document.getElementById('destinoSelect');
+            
+            if (!origenId) {
+                destinoSelect.innerHTML = '<option value="">Selecciona destino</option>';
+                return;
+            }
+            
+            // Encontrar todas las rutas que salen desde este origen
+            const rutasDesdeOrigen = rutas.filter(r => r.origenlocationId === origenId);
+            
+            // Extraer IDs únicos de destinos
+            const destinoIds = [...new Set(rutasDesdeOrigen.map(r => r.destinoLocationId))];
+            
+            // Construir opciones solo con destinos disponibles
+            let html = '<option value="">Selecciona destino</option>';
+            destinoIds.forEach(destId => {
+                const ubicacion = ubicaciones.find(u => u.id === destId);
+                if (ubicacion) {
+                    html += `<option value="${ubicacion.id}">${ubicacion.nombre}</option>`;
+                }
+            });
+            
+            destinoSelect.innerHTML = html;
+        }
+
+        function mostrarAlerta(mensaje, tipo, contenedorId) {
+            const alertHtml = `<div class="alert alert-${tipo}">${mensaje}</div>`;
+            const contenedor = document.getElementById(contenedorId);
+            contenedor.innerHTML = alertHtml;
+            setTimeout(() => contenedor.innerHTML = '', 5000);
+        }
+
+        // ========== SIGNALR ==========
+        function iniciarSignalR() {
+            conexionSignalR = new signalR.HubConnectionBuilder()
+                .withUrl(`${API_URL}/hubs/movilidad`)
+                .withAutomaticReconnect()
+                .build();
+
+            conexionSignalR.on('ActualizarVehiculo', (vehiculo) => {
+                const idx = vehiculos.findIndex(v => v.id === vehiculo.id);
+                if (idx >= 0) {
+                    vehiculos[idx] = vehiculo;
+                    actualizarMarcadorVehiculo(vehiculo);
+                    actualizarDashboard();
+                }
+            });
+
+            conexionSignalR.on('ViajeFinalizado', (notificacion) => {
+                const vehiculoId = notificacion?.vehiculoId ?? notificacion?.VehiculoId ?? notificacion;
+                const mensaje = vehiculoId ? `Viaje finalizado para ${vehiculoId}` : 'Viaje finalizado';
+                mostrarAlerta(mensaje, 'success', 'alertContainerViajes');
+            });
+
+            conexionSignalR.start()
+                .then(() => {
+                    document.getElementById('statusDot').classList.remove('disconnected');
+                    document.getElementById('statusText').textContent = 'Conectado';
+                })
+                .catch(err => {
+                    console.error('SignalR connection error:', err);
+                    document.getElementById('statusDot').classList.add('disconnected');
+                    document.getElementById('statusText').textContent = 'Desconectado';
+                });
+
+            conexionSignalR.onreconnected(() => {
+                document.getElementById('statusDot').classList.remove('disconnected');
+                document.getElementById('statusText').textContent = 'Reconectado';
+                cargarDatos();
+            });
+        }
+    </script>
+</body>
+</html>

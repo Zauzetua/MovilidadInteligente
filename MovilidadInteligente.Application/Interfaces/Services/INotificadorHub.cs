@@ -11,5 +11,6 @@ namespace MovilidadInteligente.Application.Interfaces.Services
     public interface INotificadorHub
     {
         Task EnviarActualizacionVehiculoAsync(VehiculoDTO vehiculoDto);
+        Task EnviarViajeFinalizadoAsync(string vehiculoId);
     }
 }

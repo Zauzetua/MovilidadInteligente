@@ -49,6 +49,12 @@ namespace MovilidadInteligente.Application.Services
             return vehiculos.Select(v => VehiculoMapper.ToDTO(v)).ToList();
         }
 
+        public async Task<IEnumerable<VehiculoDTO>> ObtenerVehiculosMantenimientoAsync()
+        {
+            var vehiculos = await _vehiculoRepository.ObtenerVehiculosMantenimiento();
+            return vehiculos.Select(v => VehiculoMapper.ToDTO(v)).ToList();
+        }
+
         public async Task<VehiculoDTO> CreateAsync(VehiculoDTO vehiculoDto)
         {
             var entidad = VehiculoMapper.ToEntity(vehiculoDto);
