@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MovilidadInteligente.Application.Models
 {
     public class RutaDTO
@@ -10,7 +12,9 @@ namespace MovilidadInteligente.Application.Models
         public int NivelTraficoActual { get; set; }
 
         // Opcional: para respuestas que incluyen datos de ubicaciones
-        public UbicacionDTO OrigenlLocation { get; set; }
-        public UbicacionDTO DestinoLocation { get; set; }
+        [JsonIgnore]
+        public UbicacionDTO? OrigenlLocation { get; set; }
+        [JsonIgnore]
+        public UbicacionDTO? DestinoLocation { get; set; }
     }
 }
