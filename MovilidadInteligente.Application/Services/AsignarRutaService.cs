@@ -33,14 +33,14 @@ namespace MovilidadInteligente.Application.Services
             _rutasDisponibles = new List<RutaPredeterminada>();
         }
 
-        public async Task<RutaPredeterminada?> AsignarRuta(string origen, string destino)
+        public async Task<RutaPredeterminada?> AsignarRuta(string origenLocationId, string destinoLocationId)
         {
-            var rutasPosibles = _rutasDisponibles.Where(RutaPredeterminada => RutaPredeterminada.Origen == origen && RutaPredeterminada.Destino == destino).ToList();
+            var rutasPosibles = _rutasDisponibles.Where(ruta => ruta.OrigenlocationId == origenLocationId && ruta.DestinoLocationId == destinoLocationId).ToList();
 
             if (!rutasPosibles.Any())
                 return null;
 
-            var rutaAsignada = rutasPosibles.OrderBy(RutaPredeterminada => RutaPredeterminada.NivelTraficoActual).FirstOrDefault();
+            var rutaAsignada = rutasPosibles.OrderBy(ruta => ruta.NivelTraficoActual).FirstOrDefault();
             return rutaAsignada;
         }
     }

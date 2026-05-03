@@ -12,5 +12,15 @@ namespace MovilidadInteligente.Domain.Entities
         public string Nombre { get; set; }
         public double Latitud { get; set; }
         public double Longitud { get; set; }
+
+        public Ubicacion(string id, string nombre, double latitud, double longitud)
+        {
+            Id = id;
+            Nombre = nombre;
+            Latitud = latitud;
+            Longitud = longitud;
+        }
+
+        public Ubicacion() { }
     }
 }

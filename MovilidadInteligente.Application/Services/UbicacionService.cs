@@ -1,33 +1,54 @@
-﻿using MovilidadInteligente.Domain.Entities;
+﻿using MovilidadInteligente.Application.Interfaces.Repositories;
+using MovilidadInteligente.Application.Interfaces.Services;
+using MovilidadInteligente.Application.Mappers;
+using MovilidadInteligente.Application.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace MovilidadInteligente.Application.Services
 {
-    public class UbicacionesService
+    public class UbicacionService : IUbicacionService
     {
-        private readonly List<Ubicacion> _ubicaciones;
+        private readonly IUbicacionRepository _ubicacionRepository;
 
-        public UbicacionesService()
+        public UbicacionService(IUbicacionRepository ubicacionRepository)
         {
-            // simulamos una tabla de la base de datos con nuestras estaciones
-            _ubicaciones = new List<Ubicacion>
-{
-    new Ubicacion { Id = "UB-01", Nombre = "Centro", Latitud = 27.0730, Longitud = -109.4445 },
-    new Ubicacion { Id = "UB-02", Nombre = "ITSON Navojoa", Latitud = 27.0815, Longitud = -109.4510 },
-    new Ubicacion { Id = "UB-03", Nombre = "Plaza 5 de Mayo", Latitud = 27.0710, Longitud = -109.4420 },
-    new Ubicacion { Id = "UB-04", Nombre = "Hospital General", Latitud = 27.0775, Longitud = -109.4475 },
-    new Ubicacion { Id = "UB-05", Nombre = "Soriana", Latitud = 27.0795, Longitud = -109.4490 },
-    new Ubicacion { Id = "UB-06", Nombre = "Unidad Deportiva", Latitud = 27.0720, Longitud = -109.4350 },
-    new Ubicacion { Id = "UB-07", Nombre = "Central de Autobuses", Latitud = 27.0680, Longitud = -109.4400 },
-    new Ubicacion { Id = "UB-08", Nombre = "Colonia Reforma", Latitud = 27.0785, Longitud = -109.4415 },
-    new Ubicacion { Id = "UB-09", Nombre = "Parque Infantil", Latitud = 27.0705, Longitud = -109.4375 },
-    new Ubicacion { Id = "UB-10", Nombre = "Zona Industrial", Latitud = 27.0850, Longitud = -109.4550 }
-};
+            _ubicacionRepository = ubicacionRepository;
         }
 
-        public IEnumerable<Ubicacion> ObtenerTodas()
+        public async Task<IEnumerable<UbicacionDTO>> GetAllAsync()
         {
-            return _ubicaciones;
+            var ubicaciones = await _ubicacionRepository.GetAllAsync();
+            return ubicaciones.Select(u => UbicacionMapper.ToDTO(u)).ToList();
+        }
+
+        public async Task<UbicacionDTO> GetByIdAsync(string id)
+        {
+            var ubicacion = await _ubicacionRepository.GetByIdAsync(id);
+            return UbicacionMapper.ToDTO(ubicacion);
+        }
+
+        public async Task<UbicacionDTO> CreateAsync(UbicacionDTO ubicacionDto)
+        {
+            var entidad = UbicacionMapper.ToEntity(ubicacionDto);
+            var creada = await _ubicacionRepository.AddAsync(entidad);
+            return UbicacionMapper.ToDTO(creada);
+        }
+
+        public async Task<UbicacionDTO> UpdateAsync(string id, UbicacionDTO ubicacionDto)
+        {
+            ubicacionDto.Id = id;
+            var entidad = UbicacionMapper.ToEntity(ubicacionDto);
+            var actualizada = await _ubicacionRepository.UpdateAsync(entidad);
+            return UbicacionMapper.ToDTO(actualizada);
+        }
+
+        public async Task<bool> DeleteAsync(string id)
+        {
+            return await _ubicacionRepository.DeleteAsync(id);
         }
     }
 }

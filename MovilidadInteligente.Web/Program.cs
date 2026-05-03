@@ -32,9 +32,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<IVehiculoRepository, VehiculoRepository>();
-builder.Services.AddScoped<IVehiculoService, VehiculoService>();
-builder.Services.AddScoped<AsignarRutaService>();
+builder.Services.AddScoped<IUbicacionRepository, UbicacionRepository>();
+builder.Services.AddScoped<IRutaRepository, RutaRepository>();
 
+builder.Services.AddScoped<IVehiculoService, VehiculoService>();
+builder.Services.AddScoped<IUbicacionService, UbicacionService>();
+builder.Services.AddScoped<IRutaService, RutaService>();
+
+//builder.Services.AddScoped<AsignarRutaService>();
+builder.Services.AddScoped<CatalogoRutasService>();
 
 builder.Services.AddSingleton<IMqttService, MqttService>();
 builder.Services.AddHostedService<MovilidadWorker>();
@@ -42,11 +48,8 @@ builder.Services.AddHostedService<MovilidadWorker>();
 builder.Services.AddScoped<ProcesarTelemetriaService>();
 builder.Services.AddScoped<MonitorearDesconexionesService>();
 builder.Services.AddScoped<ObtenerVehiculosMantenimientoService>();
-builder.Services.AddScoped<IVehiculoService, VehiculoService>();
 builder.Services.AddScoped<INotificadorHub, NotificadorHubAdapter>();
 builder.Services.AddScoped<IDespachadorVehiculos, MqttDespachadorService>();
-builder.Services.AddScoped<CatalogoRutasService>();
-builder.Services.AddScoped<UbicacionesService>();
 
 //builder.Services.AddScoped<INotificadorHub>();
 
