@@ -19,73 +19,133 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.awesome-markers/2.0.4/leaflet.awesome-markers.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0066cc;
-            --primary-dark: #0052a3;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #17a2b8;
-            --light: #f8f9fa;
-            --dark: #343a40;
-            --gray: #6c757d;
+            --primary: #1a56db;
+            --primary-dark: #1342a8;
+            --primary-light: #e8f0fd;
+            --success: #0c9e5e;
+            --success-light: #d4f1e4;
+            --danger: #e02424;
+            --danger-light: #fde8e8;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+            --info: #0891b2;
+            --info-light: #e0f2fe;
+            --light: #f9fafb;
+            --dark: #111827;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --radius: 8px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #f3f4f6;
+            color: var(--dark);
         }
 
+        /* ======= NUEVO LAYOUT: NAV VERTICAL | PANEL | MAPA ======= */
         .container {
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* SIDEBAR - Panel de Control */
-        .sidebar {
-            width: 420px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            z-index: 1000;
-            border-right: 1px solid #e0e0e0;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .sidebar-header h1 {
-            font-size: 22px;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .connection-status {
-            display: inline-flex;
+        /* Barra vertical de iconos */
+        .nav-bar {
+            width: 68px;
+            min-width: 68px;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, #0e2d6e 100%);
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            font-size: 12px;
-            background: rgba(255,255,255,0.2);
-            padding: 6px 12px;
-            border-radius: 20px;
-            width: fit-content;
+            padding: 0;
+            z-index: 1100;
+            flex-shrink: 0;
+        }
+
+        .nav-logo {
+            width: 68px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.12);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+
+        .nav-logo i {
+            font-size: 22px;
+            color: white;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 10px 6px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .nav-btn {
+            width: 56px;
+            height: 52px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: rgba(255,255,255,0.55);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-btn i {
+            font-size: 16px;
+        }
+
+        .nav-btn span {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            line-height: 1;
+        }
+
+        .nav-btn.active {
+            background: rgba(255,255,255,0.18);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.9);
+        }
+
+        .nav-status {
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #28a745;
             animation: pulse 2s infinite;
@@ -101,21 +161,74 @@
             50% { opacity: 0.5; }
         }
 
-        .sidebar-content {
-            padding: 20px;
+        .nav-status-label {
+            font-size: 8px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        /* Panel de contenido lateral */
+        .content-panel {
+            width: 500px;
+            min-width: 500px;
+            background: white;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 2px 0 16px rgba(0,0,0,0.06);
+        }
+
+        .panel-header {
+            padding: 18px 22px 14px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .panel-header h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: -0.3px;
+        }
+
+        .panel-header p {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 22px;
+        }
+
+        /* Ocultar sidebar viejo */
+        .sidebar { display: none; }
+
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
 
         .section-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--dark);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 15px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -124,48 +237,9 @@
         .section-title::before {
             content: '';
             width: 3px;
-            height: 18px;
+            height: 16px;
             background: var(--primary);
             border-radius: 2px;
-        }
-
-        /* TABS */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .tab-btn {
-            padding: 10px 15px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray);
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        .tab-btn:hover {
-            color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
         }
 
         /* FORMULARIOS */
@@ -187,12 +261,14 @@
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 9px 11px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             font-size: 13px;
             font-family: inherit;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            background: white;
+            color: var(--dark);
         }
 
         .form-group input:focus,
@@ -200,7 +276,7 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+            box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
         }
 
         .form-group textarea {
@@ -311,17 +387,16 @@
 
         .vehicle-card {
             background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 13px;
+            transition: all 0.2s ease;
+            border-left: 3px solid var(--primary);
         }
 
         .vehicle-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
             border-color: var(--primary);
-            transform: translateY(-2px);
         }
 
         .vehicle-card-header {
@@ -757,36 +832,53 @@
 <body>
     <div id="alertContainerViajes"></div>
     <div class="container">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>🚗 Movilidad</h1>
-                <div class="connection-status">
-                    <div class="status-dot" id="statusDot"></div>
-                    <span id="statusText">Conectando...</span>
-                </div>
+        <!-- NAV VERTICAL -->
+        <nav class="nav-bar">
+            <div class="nav-logo">
+                <i class="fa-solid fa-car"></i>
             </div>
+            <div class="nav-items">
+                <button class="nav-btn active" id="navbtn-dashboard" onclick="switchTab('dashboard')" title="Dashboard">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span>Inicio</span>
+                </button>
+                <button class="nav-btn" id="navbtn-ubicaciones" onclick="switchTab('ubicaciones')" title="Ubicaciones">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>Ubicac.</span>
+                </button>
+                <button class="nav-btn" id="navbtn-rutas" onclick="switchTab('rutas')" title="Rutas">
+                    <i class="fa-solid fa-route"></i>
+                    <span>Rutas</span>
+                </button>
+                <button class="nav-btn" id="navbtn-historial" onclick="switchTab('historial')" title="Historial">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Historial</span>
+                </button>
+                <button class="nav-btn" id="navbtn-mantenimiento" onclick="switchTab('mantenimiento')" title="Mantenimiento">
+                    <i class="fa-solid fa-wrench"></i>
+                    <span>Manten.</span>
+                </button>
+                <button class="nav-btn" id="navbtn-pagos" onclick="switchTab('pagos')" title="Pagos">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <span>Pagos</span>
+                </button>
+            </div>
+            <div class="nav-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="nav-status-label" id="statusText">...</span>
+            </div>
+        </nav>
 
-            <div class="sidebar-content">
-                <!-- TABS -->
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
-                    <button class="tab-btn" onclick="switchTab('ubicaciones')">Ubicaciones</button>
-                    <button class="tab-btn" onclick="switchTab('rutas')">Rutas</button>
-                    <button class="tab-btn" onclick="switchTab('historial')">Historial</button>
-                    <button class="tab-btn" onclick="switchTab('mantenimiento')">Mantenimiento</button>
-                    <button class="tab-btn" onclick="switchTab('pagos')">💳 Pagos</button>
-                </div>
+        <!-- PANEL DE CONTENIDO -->
+        <div class="content-panel">
+            <div class="panel-header">
+                <h2 id="panelTitle">Dashboard</h2>
+                <p id="panelSubtitle">Movilidad Inteligente — Panel de Control</p>
+            </div>
+            <div class="panel-body">
 
                 <!-- TAB: DASHBOARD -->
                 <div class="tab-content active" id="tab-dashboard">
-                    <div class="section">
-                        <div class="section-title">Vehículos Disponibles</div>
-                        <div class="vehicle-grid" id="vehiclesGrid">
-                            <p style="color: var(--gray); font-size: 12px;">Cargando vehículos...</p>
-                        </div>
-                    </div>
-
                     <div class="section">
                         <div class="section-title">Solicitar Viaje</div>
                         <div class="form-section">
@@ -808,10 +900,9 @@
                                     <option value="">Selecciona vehículo</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary" onclick="solicitarViaje()">Solicitar Viaje</button>
+                            <button class="btn btn-primary" onclick="solicitarViaje()"><i class="fa-solid fa-play" style="margin-right:6px;"></i>Solicitar Viaje</button>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- TAB: UBICACIONES -->
@@ -833,17 +924,15 @@
                                     <input type="number" id="ubicacionLon" placeholder="-109.440" step="0.0001">
                                 </div>
                             </div>
-                            <button class="btn btn-success" onclick="crearUbicacion()">Crear Ubicación</button>
+                            <button class="btn btn-success" onclick="crearUbicacion()"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Crear Ubicación</button>
                         </div>
                     </div>
-
                     <div class="section">
                         <div class="section-title">Ubicaciones Existentes</div>
                         <div class="locations-list" id="locationsList">
                             <p style="color: var(--gray); font-size: 12px;">Cargando ubicaciones...</p>
                         </div>
                     </div>
-
                     <div id="alertContainer"></div>
                 </div>
 
@@ -870,22 +959,20 @@
                             </div>
                             <div class="form-group">
                                 <label>Coordenadas de la ruta</label>
-                                <textarea id="rutaCoordenadas" placeholder="27.0701,-109.4402\n27.0710,-109.4388\n27.0724,-109.4365"></textarea>
+                                <textarea id="rutaCoordenadas" placeholder="27.0701,-109.4402&#10;27.0710,-109.4388&#10;27.0724,-109.4365"></textarea>
                                 <small style="color: var(--gray); display: block; margin-top: 6px; line-height: 1.4;">
-                                    Una coordenada por línea en formato latitud,longitud. La ruta se guardará con el orden de las líneas.
+                                    Una coordenada por línea en formato latitud,longitud.
                                 </small>
                             </div>
-                            <button class="btn btn-success" onclick="crearRuta()">Crear Ruta</button>
+                            <button class="btn btn-success" onclick="crearRuta()"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Crear Ruta</button>
                         </div>
                     </div>
-
                     <div class="section">
                         <div class="section-title">Rutas Disponibles</div>
                         <div class="routes-list" id="routesList">
                             <p style="color: var(--gray); font-size: 12px;">Cargando rutas...</p>
                         </div>
                     </div>
-
                     <div id="alertContainerRutas"></div>
                 </div>
 
@@ -901,17 +988,24 @@
 
                 <!-- TAB: MANTENIMIENTO -->
                 <div class="tab-content" id="tab-mantenimiento">
+                    <!-- Lista completa de vehículos con controles -->
                     <div class="section">
-                        <div class="section-title">Vehículos en Mantenimiento</div>
+                        <div class="section-title" id="mantVehiculosTitle">Todos los Vehículos</div>
+                        <div class="vehicle-grid" id="vehiclesGrid">
+                            <p style="color: var(--gray); font-size: 12px;">Cargando vehículos...</p>
+                        </div>
+                    </div>
+                    <!-- Vehículos específicamente en mantenimiento -->
+                    <div class="section">
+                        <div class="section-title">En Mantenimiento</div>
                         <div class="routes-list" id="maintenanceList">
-                            <p style="color: var(--gray); font-size: 12px;">Cargando mantenimiento...</p>
+                            <p style="color: var(--gray); font-size: 12px;">Cargando...</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- TAB: PAGOS -->
                 <div class="tab-content" id="tab-pagos">
-
                     <!-- Estadísticas rápidas -->
                     <div class="pagos-stats">
                         <div class="pago-stat-card">
@@ -923,7 +1017,6 @@
                             <div class="stat-label">Monto total</div>
                         </div>
                     </div>
-
                     <!-- Formulario nuevo pago -->
                     <div class="section">
                         <div class="section-title">Registrar Pago</div>
@@ -952,41 +1045,40 @@
                                 <label>Método de Pago</label>
                                 <select id="pagoMetodo">
                                     <option value="">Selecciona método</option>
-                                    <option value="Efectivo">💵 Efectivo</option>
-                                    <option value="TarjetaDebito">💳 Tarjeta Débito</option>
-                                    <option value="TarjetaCredito">💳 Tarjeta Crédito</option>
-                                    <option value="Transferencia">🏦 Transferencia</option>
-                                    <option value="QR">📱 QR / App</option>
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="TarjetaDebito">Tarjeta Débito</option>
+                                    <option value="TarjetaCredito">Tarjeta Crédito</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                    <option value="QR">QR / App</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Estado</label>
                                 <select id="pagoEstado">
-                                    <option value="Pendiente">⏳ Pendiente</option>
-                                    <option value="Completado" selected>✅ Completado</option>
-                                    <option value="Cancelado">❌ Cancelado</option>
-                                    <option value="Reembolsado">↩️ Reembolsado</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Completado" selected>Completado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                    <option value="Reembolsado">Reembolsado</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Referencia <span style="font-weight:400;color:var(--gray);">(opcional)</span></label>
                                 <input type="text" id="pagoReferencia" placeholder="Ej: TXN-20260503-001" maxlength="100">
                             </div>
-                            <button class="btn btn-primary" onclick="registrarPago()">💳 Registrar Pago</button>
+                            <button class="btn btn-primary" onclick="registrarPago()"><i class="fa-solid fa-credit-card" style="margin-right:6px;"></i>Registrar Pago</button>
                             <div id="alertContainerPagos" style="margin-top:10px;"></div>
                         </div>
                     </div>
-
                     <!-- Lista de pagos -->
                     <div class="section">
                         <div class="section-title">Historial de Pagos</div>
                         <div class="pagos-filter-row">
                             <select id="filtroEstadoPago" onchange="filtrarPagos()">
                                 <option value="">Todos los estados</option>
-                                <option value="Completado">✅ Completado</option>
-                                <option value="Pendiente">⏳ Pendiente</option>
-                                <option value="Cancelado">❌ Cancelado</option>
-                                <option value="Reembolsado">↩️ Reembolsado</option>
+                                <option value="Completado">Completado</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Cancelado">Cancelado</option>
+                                <option value="Reembolsado">Reembolsado</option>
                             </select>
                             <select id="filtroMetodoPago" onchange="filtrarPagos()">
                                 <option value="">Todos los métodos</option>
@@ -1001,12 +1093,12 @@
                             <p style="color: var(--gray); font-size: 12px;">Cargando pagos...</p>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </div>
 
-        <!-- MAIN CONTENT -->
+            </div><!-- /panel-body -->
+        </div><!-- /content-panel -->
+
+        <!-- MAIN CONTENT (MAPA) -->
         <div class="main-content">
             <div id="mapa"></div>
             <div class="vehicles-panel">
@@ -1016,9 +1108,10 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div><!-- /container -->
 
     <script>
+
         // ========== CONFIGURACIÓN ==========
         const API_URL = 'http://localhost:5150';
         let vehiculos = [];
@@ -1109,7 +1202,7 @@
                 const marker = L.marker([vehiculo.latitud, vehiculo.longitud], markerOptions).addTo(mapa);
                 
                 marker.bindPopup(`
-                    <b>🚗 ${vehiculo.id}</b><br>
+                    <b>${vehiculo.id}</b><br>
                     Estado: ${vehiculo.estado}<br>
                     Combustible: ${vehiculo.combustible}%<br>
                     Lat: ${vehiculo.latitud.toFixed(4)}<br>
@@ -1190,15 +1283,16 @@
             }
         }
 
-        function metodoPagoIcon(metodo) {
+        function metodoPagoIconHtml(metodo) {
             const icons = {
-                'Efectivo': '💵',
-                'TarjetaDebito': '💳',
-                'TarjetaCredito': '💳',
-                'Transferencia': '🏦',
-                'QR': '📱'
+                'Efectivo': 'fa-money-bill-wave',
+                'TarjetaDebito': 'fa-credit-card',
+                'TarjetaCredito': 'fa-credit-card',
+                'Transferencia': 'fa-building-columns',
+                'QR': 'fa-qrcode'
             };
-            return icons[metodo] || '💰';
+            const cls = icons[metodo] || 'fa-coins';
+            return `<i class="fa-solid ${cls}"></i>`;
         }
 
         function pagoEstadoClass(estado) {
@@ -1240,7 +1334,6 @@
                     : p.historialViajeId;
                 const fecha = new Date(p.fechaUtc).toLocaleString('es-ES');
                 const estadoClass = pagoEstadoClass(p.estado);
-                const icono = metodoPagoIcon(p.metodo);
                 const colorBorder = estadoClass === 'completado' || estadoClass === 'pagado'
                     ? 'var(--success)'
                     : estadoClass === 'pendiente'
@@ -1258,13 +1351,13 @@
                         <span class="pago-estado ${estadoClass}">${p.estado}</span>
                     </div>
                     <div class="pago-meta">
-                        <div>🚗 <strong>Vehículo:</strong> ${vehiculoLabel}</div>
-                        <div>📅 <strong>Fecha:</strong> ${fecha}</div>
-                        ${p.referencia ? `<div>🔖 <strong>Ref:</strong> ${p.referencia}</div>` : ''}
+                        <div><i class="fa-solid fa-car" style="width:14px;margin-right:4px;color:var(--gray);"></i><strong>Veh&iacute;culo:</strong> ${vehiculoLabel}</div>
+                        <div><i class="fa-solid fa-calendar" style="width:14px;margin-right:4px;color:var(--gray);"></i><strong>Fecha:</strong> ${fecha}</div>
+                        ${p.referencia ? `<div><i class="fa-solid fa-tag" style="width:14px;margin-right:4px;color:var(--gray);"></i><strong>Ref:</strong> ${p.referencia}</div>` : ''}
                     </div>
                     <div style="margin-top: 6px; display:flex; justify-content:space-between; align-items:center;">
-                        <span class="pago-metodo-badge">${icono} ${p.metodo}</span>
-                        ${p.estado === 'Pendiente' ? `<button class="btn btn-xs" style="background:#dc3545;color:white" onclick="cancelarPago('${p.id}')">Cancelar</button>` : ''}
+                        <span class="pago-metodo-badge">${metodoPagoIconHtml(p.metodo)} ${p.metodo}</span>
+                        ${p.estado === 'Pendiente' ? `<button class="btn btn-xs" style="background:#e02424;color:white" onclick="cancelarPago('${p.id}')"><i class="fa-solid fa-xmark" style="margin-right:4px;"></i>Cancelar</button>` : ''}
                     </div>
                     ${p.id ? `<div class="pago-referencia">ID: ${p.id}</div>` : ''}
                 </div>`;
@@ -1318,7 +1411,7 @@
                 });
 
                 if (res.ok) {
-                    mostrarAlerta('✅ Pago registrado exitosamente', 'success', 'alertContainerPagos');
+                    mostrarAlerta('Pago registrado exitosamente', 'success', 'alertContainerPagos');
                     document.getElementById('pagoHistorialId').value = '';
                     document.getElementById('pagoMonto').value = '';
                     document.getElementById('pagoMoneda').value = 'MXN';
@@ -1373,27 +1466,30 @@
                 const estadoClass = v.estado.toLowerCase().replace(/\s+/g, '');
                 const fuelField = v.bateria !== undefined ? 'bateria' : 'combustible';
                 const fuelValue = v.bateria !== undefined ? v.bateria : v.combustible;
-                const fuelLabel = v.bateria !== undefined ? '🔋 Batería' : '⛽ Combustible';
+                const fuelIcon = v.bateria !== undefined
+                    ? '<i class="fa-solid fa-battery-half"></i>'
+                    : '<i class="fa-solid fa-gas-pump"></i>';
+                const fuelLabel = v.bateria !== undefined ? 'Bater&iacute;a' : 'Combustible';
                 const esDisponible = v.estado === 'Disponible';
                 const estaEnMantenimiento = v.estado === 'Mantenimiento';
 
                 return `
                 <div class="vehicle-card" id="vcard-${v.id}">
                     <div class="vehicle-card-header">
-                        <span class="vehicle-id">🚗 ${v.id}</span>
+                        <span class="vehicle-id"><i class="fa-solid fa-car" style="margin-right:5px;"></i>${v.id}</span>
                         <span class="vehicle-status ${estadoClass}">${v.estado}</span>
                     </div>
                     <div class="vehicle-info">
-                        <div>📍 ${v.latitud.toFixed(4)}, ${v.longitud.toFixed(4)}</div>
-                        <div>⏰ ${new Date(v.ultimaActualizacion).toLocaleTimeString('es-ES')}</div>
+                        <div><i class="fa-solid fa-location-dot" style="margin-right:4px;color:var(--gray);"></i>${v.latitud.toFixed(4)}, ${v.longitud.toFixed(4)}</div>
+                        <div><i class="fa-solid fa-clock" style="margin-right:4px;color:var(--gray);"></i>${new Date(v.ultimaActualizacion).toLocaleTimeString('es-ES')}</div>
                     </div>
-                    <div style="font-weight: 600; margin-bottom: 4px; font-size: 12px;">${fuelLabel}: <span id="fuelVal-${v.id}">${fuelValue}</span>%</div>
+                    <div style="font-weight: 600; margin-bottom: 4px; font-size: 12px;">${fuelIcon} ${fuelLabel}: <span id="fuelVal-${v.id}">${fuelValue}</span>%</div>
                     <div class="fuel-bar">
                         <div class="fuel-bar-fill ${getFuelClass(fuelValue)}" id="fuelBar-${v.id}" style="width: ${fuelValue}%"></div>
                     </div>
                     <div class="vehicle-controls">
                         <div class="fuel-slider-row">
-                            <span>${fuelLabel}</span>
+                            <span>${fuelIcon} ${fuelLabel}</span>
                             <input type="range" min="0" max="100" value="${fuelValue}"
                                 id="slider-${v.id}"
                                 oninput="previewFuel('${v.id}', this.value)"
@@ -1401,9 +1497,9 @@
                             <span class="fuel-value-badge" id="sliderVal-${v.id}">${fuelValue}%</span>
                         </div>
                         <div class="vehicle-actions">
-                            ${!esDisponible ? `<button class="btn btn-success btn-xs" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')">✅ Disponible</button>` : ''}
-                            ${esDisponible ? `<button class="btn btn-xs" style="background:#ffc107;color:#333" onclick="cambiarEstadoVehiculo('${v.id}', 'NoDisponible')">🔒 No Disponible</button>` : ''}
-                            ${!estaEnMantenimiento ? `<button class="btn btn-xs" style="background:#dc3545;color:white" onclick="cambiarEstadoVehiculo('${v.id}', 'Mantenimiento')">🔧 Mantenimiento</button>` : ''}
+                            ${!esDisponible ? `<button class="btn btn-success btn-xs" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')"><i class="fa-solid fa-check" style="margin-right:4px;"></i>Disponible</button>` : ''}
+                            ${esDisponible ? `<button class="btn btn-xs" style="background:#d97706;color:white" onclick="cambiarEstadoVehiculo('${v.id}', 'NoDisponible')"><i class="fa-solid fa-lock" style="margin-right:4px;"></i>No Disponible</button>` : ''}
+                            ${!estaEnMantenimiento ? `<button class="btn btn-xs" style="background:#e02424;color:white" onclick="cambiarEstadoVehiculo('${v.id}', 'Mantenimiento')"><i class="fa-solid fa-wrench" style="margin-right:4px;"></i>Mantenimiento</button>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -1414,13 +1510,13 @@
             // Actualizar panel info
             const infoHtml = vehiculos.map(v => {
                 const fuelValue = v.bateria !== undefined ? v.bateria : v.combustible;
-                return `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
+                return `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb;">
                     <strong>${v.id}</strong> - ${v.estado}<br>
-                    <small>⛽ ${fuelValue}%</small>
+                    <small><i class="fa-solid fa-gas-pump" style="margin-right:3px;"></i>${fuelValue}%</small>
                 </div>`;
             }).join('');
 
-            document.getElementById('vehiclesInfo').innerHTML = infoHtml || 'No hay vehículos';
+            document.getElementById('vehiclesInfo').innerHTML = infoHtml || 'No hay veh&iacute;culos';
         }
 
         function previewFuel(vehiculoId, value) {
@@ -1552,15 +1648,15 @@
             const maintenanceHtml = enMantenimiento.map(v => {
                 const fuelValue = v.bateria !== undefined ? v.bateria : v.combustible;
                 return `<div class="route-item">
-                    <div class="route-item-header">🚗 ${v.id}</div>
-                    <div class="route-item-meta">Estado: ${v.estado} | ⛽ ${fuelValue}%</div>
+                    <div class="route-item-header"><i class="fa-solid fa-car" style="margin-right:5px;"></i>${v.id}</div>
+                    <div class="route-item-meta">Estado: ${v.estado} | <i class="fa-solid fa-gas-pump" style="margin:0 3px;"></i>${fuelValue}%</div>
                     <div style="margin-top:6px; display:flex; gap:6px;">
-                        <button class="btn btn-small btn-success" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')">✅ Marcar Disponible</button>
+                        <button class="btn btn-small btn-success" onclick="cambiarEstadoVehiculo('${v.id}', 'Disponible')"><i class="fa-solid fa-check" style="margin-right:4px;"></i>Marcar Disponible</button>
                     </div>
                 </div>`;
             }).join('');
 
-            document.getElementById('maintenanceList').innerHTML = maintenanceHtml || '<p style="color: var(--gray);">No hay vehículos en mantenimiento</p>';
+            document.getElementById('maintenanceList').innerHTML = maintenanceHtml || '<p style="color: var(--gray);">No hay veh&iacute;culos en mantenimiento</p>';
         }
 
         function limpiarYDibujarMapa() {
@@ -1765,12 +1861,33 @@
             return 'good';
         }
 
+        const TAB_LABELS = {
+            dashboard: { title: 'Dashboard', sub: 'Solicitar viajes y ver el mapa en tiempo real' },
+            ubicaciones: { title: 'Ubicaciones', sub: 'Gestionar paradas y puntos de interés' },
+            rutas: { title: 'Rutas', sub: 'Definir y visualizar rutas disponibles' },
+            historial: { title: 'Historial', sub: 'Registro de viajes completados' },
+            mantenimiento: { title: 'Mantenimiento', sub: 'Estado y gestión de la flota de vehículos' },
+            pagos: { title: 'Pagos', sub: 'Registro y seguimiento de transacciones' }
+        };
+
         function switchTab(tab) {
+            // Ocultar todos los tabs
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            event.target.classList.add('active');
+            // Desactivar todos los nav-btn
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+            // Activar tab y nav-btn correspondiente
+            const tabEl = document.getElementById(`tab-${tab}`);
+            if (tabEl) tabEl.classList.add('active');
+            const navBtn = document.getElementById(`navbtn-${tab}`);
+            if (navBtn) navBtn.classList.add('active');
+
+            // Actualizar encabezado del panel
+            const labels = TAB_LABELS[tab] || { title: tab, sub: '' };
+            const titleEl = document.getElementById('panelTitle');
+            const subEl = document.getElementById('panelSubtitle');
+            if (titleEl) titleEl.textContent = labels.title;
+            if (subEl) subEl.textContent = labels.sub;
         }
 
         function seleccionarVehiculo(vehiculoId) {
