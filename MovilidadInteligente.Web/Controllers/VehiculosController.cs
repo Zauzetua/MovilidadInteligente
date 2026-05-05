@@ -77,7 +77,7 @@ namespace MovilidadInteligente.Web.Controllers
         public async Task<IActionResult> Create([FromBody] VehiculoDTO vehiculoDto)
         {
             if (vehiculoDto == null || string.IsNullOrWhiteSpace(vehiculoDto.Id))
-                return BadRequest(new { Error = "Payload inválido" });
+                return BadRequest(new { Error = "Payload invalido" });
 
             try
             {

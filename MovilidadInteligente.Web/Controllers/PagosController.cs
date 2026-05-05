@@ -53,7 +53,7 @@ namespace MovilidadInteligente.Web.Controllers
         public async Task<IActionResult> Create([FromBody] PagoDTO pagoDto)
         {
             if (pagoDto == null || string.IsNullOrWhiteSpace(pagoDto.Id))
-                return BadRequest(new { Error = "Payload inválido. El ID es requerido." });
+                return BadRequest(new { Error = "Payload invalido. El ID es requerido." });
 
             if (string.IsNullOrWhiteSpace(pagoDto.HistorialViajeId))
                 return BadRequest(new { Error = "El HistorialViajeId es requerido." });

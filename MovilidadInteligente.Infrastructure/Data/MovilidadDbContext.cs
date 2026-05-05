@@ -25,7 +25,7 @@ namespace MovilidadInteligente.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuración de Vehiculo
+            // Configuracion de Vehiculo
             modelBuilder.Entity<Vehiculo>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -37,7 +37,7 @@ namespace MovilidadInteligente.Infrastructure.Data
                 entity.Property(e => e.UltimaActualizacion).IsRequired().HasDefaultValue(DateTime.UtcNow);
             });
 
-            // Configuración de Ubicacion
+            // Configuracion de Ubicacion
             modelBuilder.Entity<Ubicacion>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -46,7 +46,7 @@ namespace MovilidadInteligente.Infrastructure.Data
                 entity.Property(e => e.Longitud).IsRequired();
             });
 
-            // Configuración de RutaPredeterminada
+            // Configuracion de RutaPredeterminada
             modelBuilder.Entity<RutaPredeterminada>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -74,7 +74,7 @@ namespace MovilidadInteligente.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configuración de Coordenada
+            // Configuracion de Coordenada
             modelBuilder.Entity<Coordenada>(entity =>
             {
                 entity.HasKey(e => e.Id);

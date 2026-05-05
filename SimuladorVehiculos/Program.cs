@@ -96,7 +96,7 @@ class Program
 
         await PublicarTelemetriaAsync(client, vehiculoId, latInicial, lonInicial, combustible, "Disponible");
 
-        //CLAVE: mantener vivo el simulador
+        //mantener vivo el simulador
         await Task.Delay(Timeout.Infinite);
     }
 
