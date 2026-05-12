@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MovilidadInteligente.Application.Interfaces.Services;
 using MovilidadInteligente.Application.Models;
 
 namespace MovilidadInteligente.Web.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UbicacionesController : ControllerBase

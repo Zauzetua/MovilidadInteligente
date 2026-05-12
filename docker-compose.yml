@@ -1,0 +1,90 @@
+services:
+  # Base de Datos (SQL Server)
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: movilidad_db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password123!
+    ports:
+      - "1433:1433"
+    volumes:
+      # esto guarda tus datos fisicamente en tu disco duro para no perderlos
+      - mssql_data:/var/opt/mssql
+    restart: always
+
+  # Broker IoT (Mosquitto) - Comentado porque usas el que ya tenías
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: movilidad_broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: always
+
+  # Keycloak (SSO)
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: movilidad_sso
+    environment:
+      # credenciales
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    # el modo start-dev es perfecto para pruebas, usa una base de datos interna en memoria
+    command: start-dev
+    ports:
+      - "8080:8080"
+    restart: always
+
+  api:
+    container_name: movilidad_api
+    build:
+      context: .
+      dockerfile: Dockerfile.API
+    ports:
+      # exponemos la api en el 5150 para que el front no se rompa
+      - "5150:8080" 
+    depends_on:
+      - sqlserver
+      - keycloak
+    restart: always
+
+  worker:
+    container_name: movilidad_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.Worker
+    depends_on:
+      - sqlserver
+      - mosquitto
+      # - mosquitto # descomentalo si usas mosquitto desde el compose
+    restart: always
+  
+  frontend:
+    image: nginx:alpine
+    container_name: movilidad_frontend
+    ports:
+      # tu panel ciudadano estara en el puerto 80 (http normal)
+      - "80:80" 
+    volumes:
+      # inyectamos la carpeta frontend de tu compu al servidor web de docker
+      - ./frontend:/usr/share/nginx/html:ro
+    restart: always
+  simulador:
+    container_name: movilidad_simulador
+    build:
+      context: .
+      dockerfile: Dockerfile.Simulador
+    environment:
+      - API_URL=http://api:8080/api/vehiculos
+    depends_on:
+      - sqlserver
+      - api
+      - mosquitto
+    restart: always
+
+# AQUI ESTA LA MAGIA QUE FALTABA: Declaracion global de volumenes
+volumes:
+  mssql_data:

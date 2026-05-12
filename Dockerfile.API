@@ -1,0 +1,37 @@
+# usamos la imagen ligera de aspnet para correr la app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
+# usamos la imagen pesada del sdk para compilar el codigo
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# copiamos solo los archivos de proyecto primero para restaurar dependencias
+# esto hace que docker use su cache y compile mas rapido si no agregamos nuevos paquetes
+COPY ["MovilidadInteligente.Web/MovilidadInteligente.Web.csproj", "MovilidadInteligente.Web/"]
+COPY ["MovilidadInteligente.Application/MovilidadInteligente.Application.csproj", "MovilidadInteligente.Application/"]
+COPY ["MovilidadInteligente.Infrastructure/MovilidadInteligente.Infrastructure.csproj", "MovilidadInteligente.Infrastructure/"]
+COPY ["MovilidadInteligente.Domain/MovilidadInteligente.Domain.csproj", "MovilidadInteligente.Domain/"]
+
+# restauro dependencias
+RUN dotnet restore "MovilidadInteligente.Web/MovilidadInteligente.Web.csproj"
+
+# copio todo el resto del codigo fuente de mis capas
+COPY . .
+
+# me muevo a la carpeta de la api y compilo
+WORKDIR "/src/MovilidadInteligente.Web"
+RUN dotnet build "MovilidadInteligente.Web.csproj" -c Release -o /app/build
+
+# publico la version final optimizada
+FROM build AS publish
+RUN dotnet publish "MovilidadInteligente.Web.csproj" -c Release -o /app/publish
+
+# armo la imagen final copiando solo los binarios compilados
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# arranco mi api
+ENTRYPOINT ["dotnet", "MovilidadInteligente.Web.dll"]

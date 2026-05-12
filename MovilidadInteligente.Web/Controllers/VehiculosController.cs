@@ -68,7 +68,7 @@ namespace MovilidadInteligente.Web.Controllers
             var vehiculos = await _vehiculoService.ObtenerVehiculosMantenimientoAsync();
             if (vehiculos == null || !vehiculos.Any())
             {
-                return NotFound();
+                return Ok(vehiculos);
             }
             return Ok(vehiculos);
         }

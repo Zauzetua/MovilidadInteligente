@@ -1,0 +1,34 @@
+# uso la imagen ligera de runtime porque es de consola, no es web
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+WORKDIR /app
+
+# uso el sdk para compilar
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# copio mi proyecto principal
+COPY ["SimuladorVehiculos/SimuladorVehiculos.csproj", "SimuladorVehiculos/"]
+
+# copio las capas de las que dependa mi simulador (por si usa los DTOs o Entidades)
+COPY ["MovilidadInteligente.Application/MovilidadInteligente.Application.csproj", "MovilidadInteligente.Application/"]
+COPY ["MovilidadInteligente.Domain/MovilidadInteligente.Domain.csproj", "MovilidadInteligente.Domain/"]
+
+# restauro mis paquetes
+RUN dotnet restore "SimuladorVehiculos/SimuladorVehiculos.csproj"
+
+# copio el resto de mi codigo y compilo
+COPY . .
+WORKDIR "/src/SimuladorVehiculos"
+RUN dotnet build "SimuladorVehiculos.csproj" -c Release -o /app/build
+
+# publico mi version final
+FROM build AS publish
+RUN dotnet publish "SimuladorVehiculos.csproj" -c Release -o /app/publish
+
+# armo mi contenedor final
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# arranco mi simulador
+ENTRYPOINT ["dotnet", "SimuladorVehiculos.dll"]

@@ -8,7 +8,7 @@ using MQTTnet;
 using System.Text;
 using System.Text.Json;
 
-namespace MovilidadInteligente.Infrastructure.Workers
+namespace MovilidadInteligente.Worker
 {
     public class MovilidadWorker : BackgroundService
     {
@@ -31,7 +31,8 @@ namespace MovilidadInteligente.Infrastructure.Workers
             _mqttClient = factory.CreateMqttClient();
 
             var options = new MqttClientOptionsBuilder()
-                .WithTcpServer("localhost", 1883)
+                .WithTcpServer("mosquitto", 1883)
+                .WithClientId("MovilidadWorker_Docker")
                 .Build();
 
             _mqttClient.ApplicationMessageReceivedAsync += async e =>

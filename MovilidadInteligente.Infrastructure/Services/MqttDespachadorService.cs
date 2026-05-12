@@ -22,7 +22,7 @@ namespace MovilidadInteligente.Infrastructure.Services
             var factory = new MqttClientFactory();
             mqttClient = factory.CreateMqttClient();
             var options = new MqttClientOptionsBuilder()
-                .WithTcpServer("localhost", 1883)
+                .WithTcpServer("mosquitto", 1883)
                 .Build();
             mqttClient.ConnectAsync(options).Wait();
         }
