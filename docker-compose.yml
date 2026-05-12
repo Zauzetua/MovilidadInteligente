@@ -32,10 +32,11 @@ services:
       # credenciales
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-    # el modo start-dev es perfecto para pruebas, usa una base de datos interna en memoria
-    command: start-dev
+    command: start-dev -import-realm
     ports:
       - "8080:8080"
+    volumes:
+      - ./keycloak-realm.json:/opt/keycloak/data/import/realm.json
     restart: always
 
   api:
