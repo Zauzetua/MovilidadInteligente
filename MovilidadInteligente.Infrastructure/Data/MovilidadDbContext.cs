@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MovilidadInteligente.Domain.Entities;
+using MovilidadInteligente.Infrastructure.Data.Seeder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,6 +131,8 @@ namespace MovilidadInteligente.Infrastructure.Data
 
                 entity.ToTable("Pagos");
             });
+
+            modelBuilder.SeedData();
         }
 
 

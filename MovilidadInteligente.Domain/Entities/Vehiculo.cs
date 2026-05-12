@@ -26,5 +26,9 @@ namespace MovilidadInteligente.Domain.Entities
             Estado = estado;
             UltimaActualizacion = ultimaActualizacion;
         }
+
+        public Vehiculo()
+        {
+        }
     }
 }
