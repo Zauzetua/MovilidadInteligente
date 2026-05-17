@@ -9,11 +9,10 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      # esto guarda tus datos fisicamente en tu disco duro para no perderlos
       - mssql_data:/var/opt/mssql
     restart: always
 
-  # Broker IoT (Mosquitto) - Comentado porque usas el que ya tenías
+  # Broker IoT (Mosquitto)
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: movilidad_broker
@@ -26,27 +25,33 @@ services:
 
   # Keycloak (SSO)
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.Keycloak
     container_name: movilidad_sso
-    environment:
-      # credenciales
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
-    command: start-dev --import-realm
     ports:
       - "8080:8080"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+    restart: always
+
+  proxy_api:
+    image: nginx:alpine
+    container_name: movilidad_proxy_api
+    ports:
+      # nginx toma el puerto 5150 que antes usaba la api directamente
+      - "5150:80"
     volumes:
-      - ./keycloak-realm.json:/opt/keycloak/data/import/realm.json
+      - ./nginx-balancer.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
     restart: always
 
   api:
-    container_name: movilidad_api
     build:
       context: .
       dockerfile: Dockerfile.API
-    ports:
-      # exponemos la api en el 5150 para que el front no se rompa
-      - "5150:8080" 
     depends_on:
       - sqlserver
       - keycloak
@@ -60,17 +65,14 @@ services:
     depends_on:
       - sqlserver
       - mosquitto
-      # - mosquitto # descomentalo si usas mosquitto desde el compose
     restart: always
   
   frontend:
     image: nginx:alpine
     container_name: movilidad_frontend
     ports:
-      # tu panel ciudadano estara en el puerto 80 (http normal)
       - "80:80" 
     volumes:
-      # inyectamos la carpeta frontend de tu compu al servidor web de docker
       - ./frontend:/usr/share/nginx/html:ro
     restart: always
   simulador:
@@ -79,13 +81,12 @@ services:
       context: .
       dockerfile: Dockerfile.Simulador
     environment:
-      - API_URL=http://api:8080/api/vehiculos
+      - API_URL=http://proxy_api:80/api/vehiculos
     depends_on:
       - sqlserver
       - api
       - mosquitto
     restart: always
 
-# AQUI ESTA LA MAGIA QUE FALTABA: Declaracion global de volumenes
 volumes:
   mssql_data:
