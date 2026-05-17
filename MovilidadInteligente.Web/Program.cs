@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MovilidadInteligente.Application.Interfaces.Repositories;
 using MovilidadInteligente.Application.Interfaces.Services;
 using MovilidadInteligente.Application.Services;
@@ -8,8 +10,6 @@ using MovilidadInteligente.Infrastructure.Services;
 using MovilidadInteligente.Infrastructure.Workers;
 using MovilidadInteligente.Web.Hubs;
 using MQTTnet;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,18 +24,25 @@ builder.Services.AddDbContext<MovilidadDbContext>(options =>
             sqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5, // Intenta 5 veces
                 maxRetryDelay: TimeSpan.FromSeconds(5), // Espera hasta 5 segundos entre intentos
-                errorNumbersToAdd: null);
-        }));
+                errorNumbersToAdd: null
+            );
+        }
+    )
+);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.WithOrigins("http://localhost")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); // esto es obligatorio para que SignalR funcione
-    });
+    options.AddPolicy(
+        "AllowAll",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); // esto es obligatorio para que SignalR funcione
+        }
+    );
 });
 
 builder.Services.AddSignalR();
@@ -71,7 +78,8 @@ builder.Services.AddScoped<IDespachadorVehiculos, MqttDespachadorService>();
 
 //JWT
 // configuramos la autenticacion con JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Authority = builder.Configuration["Jwt:Authority"];
@@ -86,23 +94,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuers = new[]
             {
                 "http://localhost:8080/realms/MovilidadInteligente",
-                "http://keycloak:8080/realms/MovilidadInteligente"
+                "http://keycloak:8080/realms/MovilidadInteligente",
             },
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            ValidateLifetime = true
+            ValidateLifetime = true,
         };
     });
 
 // habilitamos la autorizacion
 builder.Services.AddAuthorization();
 
-
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<MovilidadDbContext>();
+    var randomDelay = new Random().Next(0, 3000);
+    System.Threading.Thread.Sleep(randomDelay);
+    try
+    {
     dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Una API ya levanto la DB o trono: {ex.Message}");
+    }
 }
 app.UseRouting();
 
@@ -111,9 +127,7 @@ app.MapHub<MovilidadHub>("/hubs/movilidad");
 app.UseRouting();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-}
+if (app.Environment.IsDevelopment()) { }
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
